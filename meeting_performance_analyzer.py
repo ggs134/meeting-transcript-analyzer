@@ -897,7 +897,7 @@ class MeetingPerformanceAnalyzer:
             }
         finally:
             # 프롬프트 설정 복구
-            self.prompt_config.default_template = original_template        """
+            self.prompt_config.default_template = original_template
         print(f"\n{'='*60}")
         print(f"📋 회의 {idx}/{total} 분석 중: {meeting.get('title', 'N/A')}")
         print(f"{'='*60}")

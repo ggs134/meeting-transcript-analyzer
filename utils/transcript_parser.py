@@ -10,9 +10,11 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # 상위 디렉토리를 경로에 추가
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from meeting_performance_analyzer import MeetingPerformanceAnalyzer
+from prompt_templates import PromptTemplates
 from transcript_parser_core import (
     get_all_participants,
     test_all_transcripts,
@@ -319,7 +321,7 @@ def _save_parsed_results(result, output_dir=None):
         output_dir: 출력 파일을 저장할 디렉토리 (None이면 현재 스크립트 디렉토리)
     """
     if output_dir is None:
-        output_dir = os.path.dirname(os.path.abspath(__file__))
+        output_dir = os.getcwd()
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = os.path.join(output_dir, f"parsed_transcripts_{timestamp}.json")
@@ -358,7 +360,7 @@ def _save_original_meetings(result, output_dir=None):
         output_dir: 출력 파일을 저장할 디렉토리 (None이면 현재 스크립트 디렉토리)
     """
     if output_dir is None:
-        output_dir = os.path.dirname(os.path.abspath(__file__))
+        output_dir = os.getcwd()
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = os.path.join(output_dir, f"original_meetings_{timestamp}.json")
@@ -407,6 +409,219 @@ def _ask_save_option(prompt):
     return choice == 'y' or choice == 'yes'
 
 
+def _interactive_analysis(analyzer, parsed_result):
+    """
+    파싱된 결과에 대해 대화형으로 분석 수행
+    
+    Args:
+        analyzer: MeetingPerformanceAnalyzer 인스턴스
+        parsed_result: 파싱 결과 딕셔너리
+    """
+    # 파싱된 회의가 없으면 종료
+    if not parsed_result or not parsed_result.get('parsed_meetings'):
+        return
+
+    parsed_meetings = parsed_result['parsed_meetings']
+    meeting_count = len(parsed_meetings)
+    
+    print("\n" + "="*80)
+    print("🤖 AI 성과 분석 (선택 사항)")
+    print("="*80)
+    print(f"파싱된 {meeting_count}개의 회의에 대해 AI 분석을 실행할 수 있습니다.")
+    
+    if not _ask_save_option("AI 분석을 실행하시겠습니까?"):
+        return
+
+    while True:
+        print("\n📊 분석 모드 선택:")
+        print("1. 개별 회의 분석 (각 회의별로 분석 리포트 생성)")
+        print("2. 종합 분석 (모든 회의를 합쳐서 하나의 리포트 생성)")
+        print("0. 취소")
+        
+        try:
+            mode = input("\n선택 (1/2/0): ").strip()
+        except (EOFError, KeyboardInterrupt):
+            mode = "0"
+        
+        if mode == "0":
+            print("분석을 취소합니다.")
+            return
+        
+        if mode not in ["1", "2"]:
+            print("잘못된 선택입니다.")
+            continue
+            
+        # 템플릿 선택
+        print("\n📝 프롬프트 템플릿 선택:")
+        all_templates = PromptTemplates.list_templates()
+        
+        # 분석 모드에 따른 템플릿 필터링
+        aggregated_templates = ['comprehensive_review', 'project_milestone', 'soft_skills_growth']
+        
+        if mode == "1": # 개별 분석
+            # 종합 분석용 템플릿 제외
+            filtered_templates = {k: v for k, v in all_templates.items() if k not in aggregated_templates}
+        else: # 종합 분석
+            # 종합 분석용 템플릿만 포함
+            filtered_templates = {k: v for k, v in all_templates.items() if k in aggregated_templates}
+            
+        template_names = sorted(filtered_templates.keys())
+        
+        if not template_names:
+            print("⚠️  사용 가능한 템플릿이 없습니다.")
+            continue
+        
+        for i, name in enumerate(template_names, 1):
+            desc = filtered_templates[name]
+            # 설명이 너무 길면 자르기
+            if len(desc) > 50:
+                desc = desc[:47] + "..."
+            print(f"{i}. {name:<20} : {desc}")
+            
+        print("0. 취소")
+        
+        try:
+            template_idx = input(f"\n선택 (1~{len(template_names)}): ").strip()
+        except (EOFError, KeyboardInterrupt):
+            template_idx = "0"
+            
+        if template_idx == "0":
+            continue
+            
+        try:
+            idx = int(template_idx) - 1
+            if 0 <= idx < len(template_names):
+                selected_template = template_names[idx]
+            else:
+                print("잘못된 번호입니다.")
+                continue
+        except ValueError:
+            print("숫자를 입력해주세요.")
+            continue
+            
+        print(f"\n✅ 선택된 템플릿: {selected_template}")
+        
+        # 분석 실행
+        try:
+            if mode == "1":
+                # 개별 분석
+                print(f"\n🚀 {meeting_count}개의 회의를 개별적으로 분석합니다...")
+                
+                for i, meeting in enumerate(parsed_meetings, 1):
+                    title = meeting.get('title', 'Untitled')
+                    print(f"\n[{i}/{meeting_count}] '{title}' 분석 중...")
+                    
+                    # 포맷팅된 텍스트 생성 (재사용)
+                    # 주의: meeting_performance_analyzer의 내부 로직을 일부 재구현해야 함
+                    # 여기서는 간단히 analyzer.analyze_participant_performance 호출
+                    
+                    # 필요한 데이터 재구성
+                    stats = meeting.get('participant_stats', {})
+                    parsed_transcript = meeting.get('parsed_transcript', [])
+                    
+                    # 포맷팅
+                    formatted_text = analyzer.format_transcript_for_analysis(
+                        meeting, parsed_transcript, stats
+                    )
+                    
+                    # 분석 호출
+                    result = analyzer.analyze_participant_performance(
+                        formatted_text, stats, template_override=selected_template
+                    )
+                    
+                    if result['status'] == 'success':
+                        print("\n" + "-"*40)
+                        print(f"📄 분석 결과 ({title})")
+                        print("-" * 40)
+                        print(result['analysis'])
+                        print("-" * 40)
+                        
+                        # 결과 저장 옵션
+                        if _ask_save_option(f"'{title}' 분석 결과를 파일로 저장하시겠습니까?"):
+                            try:
+                                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                                safe_title = "".join([c for c in title if c.isalnum() or c in (' ', '-', '_')]).strip().replace(' ', '_')
+                                filename = f"analysis_{safe_title}_{timestamp}.md"
+                                with open(filename, 'w', encoding='utf-8') as f:
+                                    f.write(f"# Analysis Result: {title}\n\n")
+                                    f.write(f"Date: {meeting.get('date', 'Unknown')}\n")
+                                    f.write(f"Template: {selected_template}\n\n")
+                                    f.write(result['analysis'])
+                                print(f"✅ 파일 저장 완료: {filename}")
+                            except Exception as e:
+                                print(f"❌ 파일 저장 실패: {e}")
+                    else:
+                        print(f"❌ 분석 실패: {result.get('error')}")
+                        
+            elif mode == "2":
+                # 종합 분석
+                # 원본 회의 데이터가 필요함 (parsed_result['meetings']에 있음)
+                original_meetings = parsed_result.get('meetings', [])
+                if not original_meetings:
+                    print("❌ 원본 회의 데이터를 찾을 수 없어 종합 분석을 수행할 수 없습니다.")
+                    continue
+                    
+                # 필터링된 회의만 추출 (parsed_meetings에 있는 ID와 일치하는 것만)
+                target_ids = set(m['id'] for m in parsed_meetings)
+                target_meetings = [m for m in original_meetings if str(m.get('_id', '')) in target_ids]
+                
+                if not target_meetings:
+                    print("❌ 분석 대상 회의를 찾을 수 없습니다.")
+                    continue
+                
+                result = analyzer.analyze_aggregated_meetings(
+                    target_meetings, template_name=selected_template
+                )
+                
+                if result and result['status'] == 'success':
+                    print("\n" + "="*60)
+                    print(f"📊 종합 분석 결과 ({len(target_meetings)}개 회의)")
+                    print("=" * 60)
+                    print(result['analysis'])
+                    print("=" * 60)
+                    
+                    # 결과 저장 옵션
+                    if _ask_save_option("종합 분석 결과를 파일로 저장하시겠습니까?"):
+                        try:
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            filename = f"aggregated_analysis_{selected_template}_{timestamp}.md"
+                            with open(filename, 'w', encoding='utf-8') as f:
+                                f.write(f"# Aggregated Analysis Result\n\n")
+                                f.write(f"Date Range: {result.get('date_range', {}).get('start')} ~ {result.get('date_range', {}).get('end')}\n")
+                                f.write(f"Meeting Count: {result.get('meeting_count')}\n")
+                                f.write(f"Template: {selected_template}\n\n")
+                                
+                                # 회의 목록 추가
+                                f.write("## Analyzed Meetings\n\n")
+                                f.write("| Date | Title | Participants |\n")
+                                f.write("|---|---|---|\n")
+                                for m in target_meetings:
+                                    date = m.get('date', 'Unknown')
+                                    if hasattr(date, 'strftime'):
+                                        date = date.strftime('%Y-%m-%d')
+                                    title = m.get('title', 'Untitled')
+                                    participants = ", ".join(m.get('participants', []))
+                                    f.write(f"| {date} | {title} | {participants} |\n")
+                                f.write("\n")
+                                
+                                f.write(result['analysis'])
+                            print(f"✅ 파일 저장 완료: {filename}")
+                        except Exception as e:
+                            print(f"❌ 파일 저장 실패: {e}")
+                else:
+                    error_msg = result.get('error') if result else "Unknown error"
+                    print(f"❌ 종합 분석 실패: {error_msg}")
+            
+            # 분석 후 종료 (또는 계속 하시겠습니까? 물어볼 수도 있음)
+            if not _ask_save_option("다른 분석을 계속 하시겠습니까?"):
+                break
+                
+        except Exception as e:
+            print(f"❌ 오류 발생: {str(e)}")
+            import traceback
+            traceback.print_exc()
+
+
 def main():
     """
     메인 함수 - 대화형 인터페이스
@@ -448,11 +663,16 @@ def main():
             result = test_with_filters(
                 analyzer=analyzer,
                 filters=filters,
-                post_filters=post_filters
+                post_filters=post_filters,
+                output_dir=os.getcwd()
             )
         else:
             # 모든 회의 분석
-            result = test_all_transcripts(analyzer=analyzer)
+            result = test_all_transcripts(analyzer=analyzer, output_dir=os.getcwd())
+        
+        # 파싱 결과에 대해 대화형 분석 실행
+        if result and result.get('parsed_meetings'):
+            _interactive_analysis(analyzer, result)
         
         # 파싱 완료 후 저장 여부 물어보기
         if result and result.get('parsed_meetings'):

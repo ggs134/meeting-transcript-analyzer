@@ -21,6 +21,11 @@ team_performance_report.txt
 team_performance.json
 team_performance.csv
 team_performance.xlsx
+analysis_*.md
+aggregated_analysis_*.md
+original_meetings_*.json
+parsed_results_*.json
+parsing_failed.json
 
 # Logs
 *.log

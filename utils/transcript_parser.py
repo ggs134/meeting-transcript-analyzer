@@ -1,0 +1,489 @@
+"""
+MongoDB Transcript 파싱 대화형 인터페이스
+사용자 입력을 받아서 핵심 기능을 호출하는 대화형 프로그램
+"""
+
+import os
+import sys
+import json
+from datetime import datetime
+from dotenv import load_dotenv
+
+# 상위 디렉토리를 경로에 추가
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from meeting_performance_analyzer import MeetingPerformanceAnalyzer
+from transcript_parser_core import (
+    get_all_participants,
+    test_all_transcripts,
+    test_with_filters,
+    convert_objectid
+)
+
+# .env 파일에서 환경 변수 로드
+load_dotenv()
+
+
+def build_filters(analyzer=None):
+    """
+    대화형으로 필터 조건을 구성
+    
+    Args:
+        analyzer: MeetingPerformanceAnalyzer 인스턴스 (참여자 목록 가져오기용, 선택사항)
+    
+    Returns:
+        (filters, post_filters) 튜플 또는 (None, None) (취소 시)
+    """
+    filters = {}
+    post_filters = {}  # 파싱 후 필터링할 조건들
+    
+    print("\n" + "="*80)
+    print("🔍 필터 옵션 선택")
+    print("="*80)
+    print("\n다음 필터 옵션 중 선택하세요 (여러 개 선택 가능, 쉼표로 구분):")
+    print("1. 날짜 범위 필터")
+    print("2. 제목 키워드 필터")
+    print("3. 특정 참여자 포함 필터")
+    print("4. Transcript 길이 필터")
+    print("5. 참여자 수 필터 (파싱 후)")
+    print("0. 필터 없이 진행 (모든 회의)")
+    print("b. 뒤로 가기 (필터 선택 취소)")
+    
+    try:
+        choices = input("\n선택하세요 (예: 1,3,5 또는 0, b): ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        choices = "0"
+        print("\n기본값(0)을 사용합니다.")
+    
+    if not choices or choices == "0":
+        print("\n✅ 필터 없이 모든 회의를 분석합니다.")
+        return filters, post_filters
+    
+    if choices == "b" or choices == "back":
+        print("\n⏪ 필터 선택을 취소하고 이전 단계로 돌아갑니다.")
+        return None, None
+    
+    choice_list = [c.strip() for c in choices.split(',')]
+    
+    # 'b'가 포함되어 있으면 제거
+    if 'b' in choice_list or 'back' in choice_list:
+        choice_list = [c for c in choice_list if c not in ['b', 'back']]
+        if not choice_list:
+            print("\n⏪ 필터 선택을 취소하고 이전 단계로 돌아갑니다.")
+            return None, None
+    
+    # 1. 날짜 범위 필터
+    if '1' in choice_list:
+        print("\n📅 날짜 범위 필터")
+        print("   옵션:")
+        print("   a. 최근 N일")
+        print("   b. 특정 기간 (시작일 ~ 종료일)")
+        print("   c. 이번 주")
+        print("   d. 이번 달")
+        print("   e. 올해")
+        print("   x. 취소")
+        
+        try:
+            date_choice = input("   선택 (a/b/c/d/e/x): ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            date_choice = "a"
+        
+        if date_choice == "x" or date_choice == "cancel":
+            print("   ⏪ 날짜 필터 선택을 취소했습니다.")
+        else:
+            from datetime import timedelta
+            
+            if date_choice == 'a':
+                try:
+                    days = int(input("   최근 며칠? (기본값: 30): ").strip() or "30")
+                except (ValueError, EOFError, KeyboardInterrupt):
+                    days = 30
+                filters['date'] = {'$gte': datetime.now() - timedelta(days=days)}
+                print(f"   ✅ 최근 {days}일 회의 필터 적용")
+            
+            elif date_choice == 'b':
+                try:
+                    start_str = input("   시작일 (YYYY-MM-DD): ").strip()
+                    end_str = input("   종료일 (YYYY-MM-DD): ").strip()
+                    if start_str:
+                        start_date = datetime.strptime(start_str, '%Y-%m-%d')
+                        filters['date'] = {'$gte': start_date}
+                    if end_str:
+                        end_date = datetime.strptime(end_str, '%Y-%m-%d')
+                        if 'date' in filters:
+                            filters['date']['$lte'] = end_date
+                        else:
+                            filters['date'] = {'$lte': end_date}
+                    print(f"   ✅ 날짜 범위 필터 적용: {start_str} ~ {end_str}")
+                except (ValueError, EOFError, KeyboardInterrupt) as e:
+                    print(f"   ⚠️  날짜 형식 오류: {e}")
+            
+            elif date_choice == 'c':  # 이번 주
+                today = datetime.now()
+                week_start = today - timedelta(days=today.weekday())
+                filters['date'] = {'$gte': week_start}
+                print(f"   ✅ 이번 주 필터 적용")
+            
+            elif date_choice == 'd':  # 이번 달
+                today = datetime.now()
+                month_start = datetime(today.year, today.month, 1)
+                filters['date'] = {'$gte': month_start}
+                print(f"   ✅ 이번 달 필터 적용")
+            
+            elif date_choice == 'e':  # 올해
+                today = datetime.now()
+                year_start = datetime(today.year, 1, 1)
+                filters['date'] = {'$gte': year_start}
+                print(f"   ✅ 올해 필터 적용")
+    
+    # 2. 제목 키워드 필터
+    if '2' in choice_list:
+        try:
+            keyword = input("\n📝 제목 키워드 (부분 일치, x로 취소): ").strip()
+            if keyword and keyword.lower() not in ['x', 'cancel']:
+                # title 또는 name 필드에 키워드가 포함된 경우
+                title_filter = {
+                    '$or': [
+                        {'title': {'$regex': keyword, '$options': 'i'}},
+                        {'name': {'$regex': keyword, '$options': 'i'}}
+                    ]
+                }
+                # 기존 필터와 AND로 결합
+                if filters:
+                    # $and가 이미 있으면 배열에 추가, 없으면 새로 생성
+                    if '$and' in filters:
+                        filters['$and'].append(title_filter)
+                    else:
+                        # 기존 필터를 $and로 감싸고 title_filter 추가
+                        filters = {'$and': [filters, title_filter]}
+                else:
+                    filters = title_filter
+                print(f"   ✅ 제목 키워드 필터 적용: '{keyword}'")
+            elif keyword.lower() in ['x', 'cancel']:
+                print("   ⏪ 제목 키워드 필터 선택을 취소했습니다.")
+        except (EOFError, KeyboardInterrupt):
+            pass
+    
+    # 3. 특정 참여자 포함 필터
+    if '3' in choice_list:
+        try:
+            if analyzer:
+                # 참여자 목록 가져오기
+                participants_list = get_all_participants(analyzer)
+                
+                if not participants_list:
+                    print("\n   ⚠️  참여자 목록을 가져올 수 없습니다. 이름을 직접 입력하세요.")
+                    participant = input("   👤 참여자 이름 (정확히 일치): ").strip()
+                    if participant:
+                        post_filters['participants'] = participant
+                        print(f"   ✅ 참여자 필터 적용: '{participant}'")
+                        print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
+                else:
+                    print(f"\n👤 참여자 목록 ({len(participants_list)}명):")
+                    for i, p in enumerate(participants_list, 1):
+                        print(f"   {i:3d}. {p}")
+                    
+                    try:
+                        choice_input = input("\n   선택하세요 (번호, 여러 개 선택 가능: 1,3,5 또는 Enter로 직접 입력, x로 취소): ").strip()
+                    except (EOFError, KeyboardInterrupt):
+                        choice_input = ""
+                    
+                    if choice_input and choice_input.lower() in ['x', 'cancel']:
+                        print("   ⏪ 참여자 필터 선택을 취소했습니다.")
+                    elif choice_input:
+                        # 번호로 선택
+                        try:
+                            selected_indices = [int(x.strip()) - 1 for x in choice_input.split(',')]
+                            selected_participants = [participants_list[i] for i in selected_indices if 0 <= i < len(participants_list)]
+                            
+                            if selected_participants:
+                                if len(selected_participants) == 1:
+                                    post_filters['participants'] = selected_participants[0]
+                                    print(f"   ✅ 참여자 필터 적용: '{selected_participants[0]}'")
+                                else:
+                                    # 여러 명 선택 시 첫 번째만 사용 (또는 OR 조건으로 확장 가능)
+                                    post_filters['participants'] = selected_participants[0]
+                                    print(f"   ✅ 참여자 필터 적용: '{selected_participants[0]}' (첫 번째 선택)")
+                                    print(f"   ℹ️  여러 명 선택 시 첫 번째 참여자만 필터로 사용됩니다.")
+                                print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
+                            else:
+                                print("   ⚠️  유효한 선택이 없습니다.")
+                        except (ValueError, IndexError):
+                            # 번호가 아니면 직접 입력으로 처리
+                            participant = choice_input
+                            post_filters['participants'] = participant
+                            print(f"   ✅ 참여자 필터 적용: '{participant}'")
+                            print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
+                    else:
+                        # 직접 입력
+                        participant = input("   👤 참여자 이름 (정확히 일치, x로 취소): ").strip()
+                        if participant and participant.lower() not in ['x', 'cancel']:
+                            post_filters['participants'] = participant
+                            print(f"   ✅ 참여자 필터 적용: '{participant}'")
+                            print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
+                        elif participant.lower() in ['x', 'cancel']:
+                            print("   ⏪ 참여자 필터 선택을 취소했습니다.")
+            else:
+                # analyzer가 없으면 직접 입력
+                participant = input("\n👤 참여자 이름 (정확히 일치, x로 취소): ").strip()
+                if participant and participant.lower() not in ['x', 'cancel']:
+                    post_filters['participants'] = participant
+                    print(f"   ✅ 참여자 필터 적용: '{participant}'")
+                    print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
+                elif participant.lower() in ['x', 'cancel']:
+                    print("   ⏪ 참여자 필터 선택을 취소했습니다.")
+        except (EOFError, KeyboardInterrupt):
+            pass
+    
+    # 4. Transcript 길이 필터
+    if '4' in choice_list:
+        try:
+            min_length = input("\n📏 최소 Transcript 길이 (문자 수, 기본값: 0, x로 취소): ").strip()
+            if min_length and min_length.lower() in ['x', 'cancel']:
+                print("   ⏪ Transcript 길이 필터 선택을 취소했습니다.")
+            else:
+                max_length = input("   최대 Transcript 길이 (문자 수, 기본값: 무제한): ").strip()
+                
+                if min_length or max_length:
+                    # 간단한 방법: content 또는 transcript 필드로 필터링
+                    # MongoDB aggregation을 사용하지 않고 파싱 후 필터링
+                    if min_length:
+                        post_filters['min_transcript_length'] = int(min_length)
+                    if max_length:
+                        post_filters['max_transcript_length'] = int(max_length)
+                    print(f"   ✅ Transcript 길이 필터 적용 (파싱 후): {min_length or 0} ~ {max_length or '무제한'}자")
+        except (ValueError, EOFError, KeyboardInterrupt):
+            pass
+    
+    # 5. 참여자 수 필터 (파싱 후 필터링)
+    if '5' in choice_list:
+        try:
+            min_participants = input("\n👥 최소 참여자 수 (기본값: 0, x로 취소): ").strip()
+            if min_participants and min_participants.lower() in ['x', 'cancel']:
+                print("   ⏪ 참여자 수 필터 선택을 취소했습니다.")
+            else:
+                max_participants = input("   최대 참여자 수 (기본값: 무제한, x로 취소): ").strip()
+                
+                if max_participants and max_participants.lower() in ['x', 'cancel']:
+                    print("   ⏪ 참여자 수 필터 선택을 취소했습니다.")
+                elif min_participants or max_participants:
+                    post_filters['min_participants'] = int(min_participants) if min_participants else 0
+                    post_filters['max_participants'] = int(max_participants) if max_participants else None
+                    print(f"   ✅ 참여자 수 필터 적용 (파싱 후): {min_participants or 0} ~ {max_participants or '무제한'}명")
+        except (ValueError, EOFError, KeyboardInterrupt):
+            pass
+    
+    return filters, post_filters
+
+
+def _get_analyzer():
+    """
+    환경 변수에서 설정을 읽어 MeetingPerformanceAnalyzer 인스턴스 생성
+    
+    Returns:
+        MeetingPerformanceAnalyzer 인스턴스
+    """
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
+    
+    DATABASE_NAME = os.getenv('DATABASE_NAME', 'company_db')
+    COLLECTION_NAME = os.getenv('COLLECTION_NAME', 'meeting_transcripts')
+    
+    MONGODB_HOST = os.getenv('MONGODB_HOST', 'localhost')
+    MONGODB_PORT = int(os.getenv('MONGODB_PORT', '27017'))
+    MONGODB_USERNAME = os.getenv('MONGODB_USERNAME')
+    MONGODB_PASSWORD = os.getenv('MONGODB_PASSWORD')
+    MONGODB_AUTH_DATABASE = os.getenv('MONGODB_AUTH_DATABASE')
+    MONGODB_URI = os.getenv('MONGODB_URI')
+    
+    return MeetingPerformanceAnalyzer(
+        gemini_api_key=GEMINI_API_KEY,
+        database_name=DATABASE_NAME,
+        collection_name=COLLECTION_NAME,
+        mongodb_host=MONGODB_HOST,
+        mongodb_port=MONGODB_PORT,
+        mongodb_username=MONGODB_USERNAME,
+        mongodb_password=MONGODB_PASSWORD,
+        mongodb_auth_database=MONGODB_AUTH_DATABASE,
+        mongodb_uri=MONGODB_URI
+    )
+
+
+def _save_parsed_results(result, output_dir=None):
+    """
+    파싱 결과를 JSON 파일로 저장
+    
+    Args:
+        result: test_all_transcripts 또는 test_with_filters의 결과
+        output_dir: 출력 파일을 저장할 디렉토리 (None이면 현재 스크립트 디렉토리)
+    """
+    if output_dir is None:
+        output_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = os.path.join(output_dir, f"parsed_transcripts_{timestamp}.json")
+    
+    # 필터 정보가 있는지 확인 (test_with_filters 결과인지)
+    if 'filters' in result:
+        output_data = {
+            "generated_at": datetime.now().isoformat(),
+            "filters_applied": {
+                "mongodb_filters": result.get('filters'),
+                "post_filters": result.get('post_filters')
+            },
+            "summary": result['summary'],
+            "parsed_meetings": result['parsed_meetings']
+        }
+    else:
+        output_data = {
+            "generated_at": datetime.now().isoformat(),
+            "summary": result['summary'],
+            "parsed_meetings": result['parsed_meetings']
+        }
+    
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(output_data, f, ensure_ascii=False, indent=2, default=str)
+    
+    print(f"\n💾 파싱 결과를 '{output_file}' 파일에 저장했습니다.")
+    print(f"   총 {len(result['parsed_meetings'])}개의 회의 파싱 결과가 저장되었습니다.")
+
+
+def _save_original_meetings(result, output_dir=None):
+    """
+    원본 쿼리 결과를 JSON 파일로 저장
+    
+    Args:
+        result: test_all_transcripts 또는 test_with_filters의 결과
+        output_dir: 출력 파일을 저장할 디렉토리 (None이면 현재 스크립트 디렉토리)
+    """
+    if output_dir is None:
+        output_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = os.path.join(output_dir, f"original_meetings_{timestamp}.json")
+    
+    # 필터 정보가 있는지 확인 (test_with_filters 결과인지)
+    if 'filters' in result:
+        output_data = {
+            "generated_at": datetime.now().isoformat(),
+            "filters_applied": {
+                "mongodb_filters": result.get('filters'),
+                "post_filters": result.get('post_filters')
+            },
+            "total_meetings": len(result['meetings']),
+            "original_meetings": [convert_objectid(meeting) for meeting in result['meetings']]
+        }
+    else:
+        output_data = {
+            "generated_at": datetime.now().isoformat(),
+            "total_meetings": len(result['meetings']),
+            "original_meetings": [convert_objectid(meeting) for meeting in result['meetings']]
+        }
+    
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(output_data, f, ensure_ascii=False, indent=2, default=str)
+    
+    print(f"\n💾 원본 쿼리 결과를 '{output_file}' 파일에 저장했습니다.")
+    print(f"   총 {len(result['meetings'])}개의 원본 회의 데이터가 저장되었습니다.")
+
+
+def _ask_save_option(prompt):
+    """
+    저장 여부를 물어보는 헬퍼 함수
+    
+    Args:
+        prompt: 물어볼 메시지
+        
+    Returns:
+        bool: 저장할지 여부
+    """
+    try:
+        choice = input(f"\n{prompt} (y/n, 기본값: n): ").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        choice = 'n'
+        print("\n기본값(n)을 사용합니다.")
+    
+    return choice == 'y' or choice == 'yes'
+
+
+def main():
+    """
+    메인 함수 - 대화형 인터페이스
+    """
+    print("🚀 MongoDB Transcript 파싱 및 분석 유틸리티")
+    print("\n분석 옵션을 선택하세요:")
+    print("  1️⃣  모든 회의 transcript 분석")
+    print("  2️⃣  필터를 사용한 분석 (날짜, 제목, 참여자 등)")
+    
+    try:
+        choice = input("\n선택 (1 또는 2, 기본값: 1): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        # 비대화형 환경이나 Ctrl+C인 경우 기본값 사용
+        choice = '1'
+        print("\n기본값(1)을 사용합니다.")
+    
+    # 분석기 초기화
+    print(f"\n🔌 MongoDB 연결 중...")
+    try:
+        analyzer = _get_analyzer()
+        print(f"   Database: {analyzer.db.name}")
+        print(f"   Collection: {analyzer.collection.name}")
+    except Exception as e:
+        print(f"❌ 오류 발생: {str(e)}")
+        return
+    
+    try:
+        if choice == '2':
+            # 필터 구성
+            filters, post_filters = build_filters(analyzer)
+            
+            # 필터 선택이 취소된 경우
+            if filters is None and post_filters is None:
+                print("\n⏪ 필터 선택이 취소되었습니다. 이전 단계로 돌아갑니다.")
+                analyzer.close()
+                return
+            
+            # 필터를 사용한 분석
+            result = test_with_filters(
+                analyzer=analyzer,
+                filters=filters,
+                post_filters=post_filters
+            )
+        else:
+            # 모든 회의 분석
+            result = test_all_transcripts(analyzer=analyzer)
+        
+        # 파싱 완료 후 저장 여부 물어보기
+        if result and result.get('parsed_meetings'):
+            if _ask_save_option("💾 파싱 결과를 JSON 파일로 저장하시겠습니까?"):
+                _save_parsed_results(result)
+        
+        if result and result.get('meetings'):
+            if _ask_save_option("💾 원본 쿼리 결과(원본 회의 데이터)를 JSON 파일로 저장하시겠습니까?"):
+                _save_original_meetings(result)
+        
+        print("\n✅ 테스트 완료!")
+        
+    except Exception as e:
+        print(f"\n❌ 오류 발생: {str(e)}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        analyzer.close()
+
+
+if __name__ == "__main__":
+    # .env 파일 확인
+    env_file = ".env"
+    if not os.path.exists(env_file):
+        print(f"⚠️  경고: {env_file} 파일을 찾을 수 없습니다.")
+        print(f"   {env_file}.example을 참고하여 {env_file} 파일을 생성해주세요.")
+    
+    # 환경 변수 확인
+    if not os.getenv('GEMINI_API_KEY'):
+        print("\n⚠️  경고: GEMINI_API_KEY 환경 변수가 설정되지 않았습니다.")
+        print("   .env 파일에 다음을 추가해주세요:")
+        print("   GEMINI_API_KEY=your-gemini-api-key-here")
+    else:
+        main()

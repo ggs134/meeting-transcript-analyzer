@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+
+# Environment Variables
+.env
+
+# Mac
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Generated Reports
+team_performance_report.txt
+team_performance.json
+team_performance.csv
+team_performance.xlsx
+
+# Logs
+*.log

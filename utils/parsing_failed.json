@@ -1,0 +1,566 @@
+{
+  "total_failed": 80,
+  "generated_at": "2025-11-22T07:38:36.158598",
+  "failed_meetings": [
+    {
+      "id": "691cee06d10432b7f9472790",
+      "title": "SYB: Jamie- Muhammed - 2025/05/06 13:29 BST - Gemini가 작성한 회의록",
+      "date": "2025-05-06 12:34:16+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727a8",
+      "title": "Test2 - 2025/11/14 14:32 KST - Gemini가 작성한 회의록",
+      "date": "2025-11-14 05:34:21+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94727a9",
+      "title": "Test - 2025/11/14 14:14 KST - Gemini가 작성한 회의록",
+      "date": "2025-11-14 05:15:38+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94727ab",
+      "title": "Seigniorage_Zena,Kevin,Harvey - 2025/05/27 16:57 KST - Notes by Gemini (영어)",
+      "date": "2025-05-27 08:08:24+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727af",
+      "title": "2025/06/11 11:47 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-06-11 02:48:43+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727b0",
+      "title": "2025/06/13 10:50 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-06-13 01:53:12+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727b1",
+      "title": "2025/06/13 10:58 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-06-13 01:59:42+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727b2",
+      "title": "2025/06/13 11:03 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-06-13 02:03:58+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727b3",
+      "title": "2025/06/13 11:04 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-06-13 02:07:48+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727b7",
+      "title": "DAO Agenda Metadata Repository_zena,kevin,jason,harvey,lucas+@ - 2025/06/24 14:38 KST - Gemini가 작성한 회의록",
+      "date": "2025-06-24 05:38:45+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727b9",
+      "title": "2025/06/25 15:56 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-06-25 06:58:13+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727bb",
+      "title": "2025/08/06 16:16 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-08-06 07:18:41+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94727bf",
+      "title": "2025/10/23 14:44 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-10-23 05:48:17+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94727c2",
+      "title": "test - 2025/11/12 17:44 KST - Gemini가 작성한 회의록",
+      "date": "2025-11-12 08:45:21+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94727c4",
+      "title": "Demo: Github Reporter & Guideline_Ale, Jaden, Irene - 2025/05/13 13:52 KST - Gemini가 작성한 스마트 노트(영어)",
+      "date": "2025-05-13 05:45:53+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94727da",
+      "title": "Meeting started 2025/11/14 15:30 GMT+08:00 - Notes by Gemini",
+      "date": "2025-11-14 07:30:55+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94727dc",
+      "title": "Ooo: Q4 planning _ Jake, Aamir - 2025/11/13 15:58 GMT+08:00 - Notes by Gemini",
+      "date": "2025-11-13 08:11:32+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94727de",
+      "title": "TEST_JAKE - 2025/11/12 16:02 GMT+08:00 - Notes by Gemini",
+      "date": "2025-11-12 08:03:41+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472818",
+      "title": "Meeting started 2025/08/04 13:31 GMT+08:00 - Notes by Gemini",
+      "date": "2025-08-04 05:33:23+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472827",
+      "title": "ZKP weekly academic seminar _ Jake, Jamie, Nakjun Lee, Muhammed, Mehdi, Luca, Nil - 2025/08/19 15:56 GMT+08:00 - Notes by Gemini",
+      "date": "2025-08-19 09:14:26+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472846",
+      "title": "Meeting started 2025/05/26 10:57 KST - Notes by Gemini (영어)",
+      "date": "2025-05-26 02:56:27+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472848",
+      "title": "Project ECO: DAO Community version discussion_Jason, Zena, Lucas - 2025/05/26 13:58 KST - Notes by Gemini (영어)",
+      "date": "2025-05-26 05:42:30+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472853",
+      "title": "verify - 2025/06/09 22:58 KST - Gemini가 작성한 회의록",
+      "date": "2025-06-09 14:00:41+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472856",
+      "title": "2025/06/10 11:25 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-06-10 02:27:25+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472865",
+      "title": "Project ECO: Discuss about DAO V2 & Snapshot_Jason, Kevin, Zena - 2025/08/27 17:15 KST - Gemini가 작성한 회의록",
+      "date": "2025-08-27 08:16:33+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472866",
+      "title": "Project ECO: Discuss about DAO V2 & Snapshot_Jason, Kevin, Zena - 2025/08/27 17:16 KST - Gemini가 작성한 회의록",
+      "date": "2025-08-27 08:17:24+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472871",
+      "title": "ProjectECO_Weekly call - 2025/11/05 16:56 KST - Gemini가 작성한 회의록",
+      "date": "2025-11-05 08:13:41+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472872",
+      "title": "test - 2025/10/31 17:19 KST - Gemini가 작성한 회의록",
+      "date": "2025-10-31 08:20:07+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472873",
+      "title": "2025/10/31 18:43 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-10-31 09:57:26+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472874",
+      "title": "test - 2025/08/26 15:58 KST - Gemini가 작성한 회의록",
+      "date": "2025-08-26 06:59:15+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472877",
+      "title": "Project TRH: Uptime Kuma Demo – 2025/10/29 10:57 GMT+05:30 – Notes by Gemini",
+      "date": "2025-10-29 06:15:00+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947287d",
+      "title": "test - 2025/08/22 11:01 KST - Gemini가 작성한 회의록",
+      "date": "2025-08-22 02:02:44+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472883",
+      "title": "2025/08/26 20:15 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-08-26 11:15:50+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472895",
+      "title": "Meeting started 2025/10/17 18:02 GMT+08:00 - Notes by Gemini",
+      "date": "2025-10-17 10:03:57+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947289b",
+      "title": "Coffee Chat (Virtual ☕️) Call_Aamir, Nam - 2025/07/28 16:31 GMT+08:00 - Notes by Gemini",
+      "date": "2025-07-28 08:46:21+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947289e",
+      "title": "test - 2025/07/24 17:02 KST - Gemini가 작성한 회의록",
+      "date": "2025-07-24 08:03:13+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94728a2",
+      "title": "OOO: Jeff_Jake Prover backend implementation discussion - 2025/08/18 17:50 CST - Notes by Gemini",
+      "date": "2025-08-18 10:21:45+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94728c6",
+      "title": "Meeting started 2025/07/03 09:32 CEST – Notes by Gemini",
+      "date": "2025-07-03 07:33:35+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94728c7",
+      "title": "test - 2025/06/25 16:40 KST - Gemini가 작성한 회의록",
+      "date": "2025-06-25 07:41:41+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94728c9",
+      "title": "Meeting started 2025/11/13 20:56 CET - Notes by Gemini",
+      "date": "2025-11-13 19:57:31+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94728ca",
+      "title": "Meeting started 2025/11/13 20:55 CET - Notes by Gemini",
+      "date": "2025-11-13 19:56:08+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94728cf",
+      "title": "SYB_MPC protocol - 2025/08/29 12:51 CEST - Notes by Gemini",
+      "date": "2025-08-29 10:52:14+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94728d0",
+      "title": "SYB_MPC protocol - 2025/08/29 12:36 CEST - Notes by Gemini",
+      "date": "2025-08-29 10:51:00+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94728d3",
+      "title": "Meeting started 2025/07/03 09:31 CEST - Notes by Gemini",
+      "date": "2025-07-03 07:34:02+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94728d4",
+      "title": "test - 2025/06/25 16:29 KST - Gemini가 작성한 회의록",
+      "date": "2025-06-25 07:30:18+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94728eb",
+      "title": "Meeting started 2025/04/28 11:35 GMT+05:30 – Notes by Gemini",
+      "date": "2025-04-28 06:07:04+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472903",
+      "title": "ProjectTRH: WeeklyCall_Praveen,Lucas,Theo,Nam,Victor,Shailendra,Chiko,George – 2025/06/19 11:30 GMT+05:30 – Notes by Gemini",
+      "date": "2025-06-19 06:53:39+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947290c",
+      "title": "Meeting started 2025/07/22 13:11 GMT+05:30 – Notes by Gemini",
+      "date": "2025-07-22 07:43:33+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947290e",
+      "title": "ProjectTRH: WeeklyCall_Praveen,Lucas,Theo,Nam,Victor,Shailendra,Chiko,George – 2025/07/24 11:28 GMT+05:30 – Notes by Gemini (English)",
+      "date": "2025-07-24 07:22:49+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472910",
+      "title": "Project TRH : Policy,release_Discussion_Praveen,Kevin – 2025/07/28 10:57 GMT+05:30 – Notes by Gemini",
+      "date": "2025-07-28 05:59:00+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947291d",
+      "title": "ProjectTRH: WeeklyCall_Praveen,Theo,Nam,Victor,Shailendra,Chiko,George – 2025/09/04 11:26 GMT+05:30 – Notes by Gemini",
+      "date": "2025-09-04 07:07:54+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947291f",
+      "title": "ProjectTRH: WeeklyCall_Praveen,Theo,Nam,Victor,Shailendra,Manish,George – 2025/09/18 11:29 GMT+05:30 – Notes by Gemini",
+      "date": "2025-09-18 06:57:41+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472936",
+      "title": "Attention Test PoC_Suhyeon, Kevin - 2025/05/22 17:00 KST - Notes by Gemini",
+      "date": "2025-05-22 08:01:27+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947293b",
+      "title": "DRB Weekly Call - 2025/06/10 16:57 KST - Gemini가 작성한 회의록",
+      "date": "2025-06-10 08:04:32+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472955",
+      "title": "DRB: Discussion (Suhyeon, Justin) - 2025/08/26 20:15 KST - Gemini가 작성한 회의록",
+      "date": "2025-08-26 11:23:10+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472966",
+      "title": "2025/10/16 16:01 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-10-16 07:02:02+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f9472975",
+      "title": "Meeting started 2025/04/27 12:07 CEST – Notes by Gemini",
+      "date": "2025-04-27 10:22:04+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472978",
+      "title": "[Test]  - 2025/11/17 13:50 GMT+07:00 - Notes by Gemini",
+      "date": "2025-11-17 06:51:15+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947297a",
+      "title": "Meeting started 2025/05/19 19:14 GMT+07:00 - Notes by Gemini",
+      "date": "2025-05-19 12:25:18+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472994",
+      "title": "Nethermind Audit – 2025/07/08 09:53 EEST – Notes by Gemini",
+      "date": "2025-07-08 07:02:45+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f9472996",
+      "title": "Meeting started 2025/08/05 14:05 EEST – Notes by Gemini",
+      "date": "2025-08-05 11:05:48+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947299c",
+      "title": "Meeting started 2025/09/19 12:03 EEST – Notes by Gemini",
+      "date": "2025-09-19 09:03:49+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f947299f",
+      "title": "2025/11/14 15:37 KST에 시작한 회의 - Gemini가 작성한 회의록",
+      "date": "2025-11-14 06:49:26+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94729a7",
+      "title": "Project Ooo: Airdrop event_Monica,Ale - 2025/07/02 10:37 KST - Gemini가 작성한 회의록",
+      "date": "2025-07-02 01:40:01+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94729ae",
+      "title": "Project TRH: figma prototype_Monica, Praveen, George - 2025/08/01 16:58 KST - Gemini가 작성한 회의록",
+      "date": "2025-08-01 08:08:02+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94729bf",
+      "title": "Meeting started 2025/05/28 17:17 KST - Notes by Gemini",
+      "date": "2025-05-28 08:18:00+00:00",
+      "failure_reason": "Transcription ended 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 164
+    },
+    {
+      "id": "691cee06d10432b7f94729c3",
+      "title": "WeeklyMeeting_Harvey,Hammer - 2025/06/11 20:58 KST - Gemini가 작성한 회의록",
+      "date": "2025-06-11 12:21:28+00:00",
+      "failure_reason": "타임스탬프/발언자 구분자 없음",
+      "transcript_length": 3307
+    },
+    {
+      "id": "691cee06d10432b7f94729ca",
+      "title": "Create Something with LLM - 2025/07/28 19:02 KST - Gemini가 작성한 회의록",
+      "date": "2025-07-28 10:03:31+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94729df",
+      "title": "Project TRH: metadata registration policy_Praveen, Theo, Shailendra - 2025/07/25 16:59 KST - Gemini가 작성한 회의록(영어)",
+      "date": "2025-07-25 09:05:35+00:00",
+      "failure_reason": "발언이 추출되지 않았습니다",
+      "transcript_length": 8392
+    },
+    {
+      "id": "691cee06d10432b7f94729e0",
+      "title": "Project TRH: demo for alert customization/log collection - 2025/08/04 14:56 KST - Gemini가 작성한 회의록",
+      "date": "2025-08-04 06:44:09+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691cee06d10432b7f94729ee",
+      "title": "Snapshot_&_Staking_Contract_Discussion_Jamie_Aryan - 2025/08/28 15:31 GMT+05:30 - Gemini가 작성한 회의록",
+      "date": "2025-08-28 10:04:07+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691e29c7d10432b7f94729fa",
+      "title": "test - 2025/11/19 14:15 KST - Gemini가 작성한 회의록",
+      "date": "2025-11-19 05:16:07+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691f02c5753f495973ff2ba2",
+      "title": "Analysis of Shared Validator Set for Securing Multi-Rollup Systems - 2025/11/20 16:00 KST - Gemini가 작성한 회의록",
+      "date": "2025-11-20 07:01:36+00:00",
+      "failure_reason": "후 스크립트 작성 종료 메시지만 있음 (실제 내용 없음)",
+      "transcript_length": 107
+    },
+    {
+      "id": "691f0ce82a7d36aefce53954",
+      "title": "Project SYB weekly call - 2025/06/19 08:53 BST – Transcript",
+      "date": "2025-06-19 09:01:09+00:00",
+      "failure_reason": "Transcript가 너무 짧음 (196자)",
+      "transcript_length": 196
+    },
+    {
+      "id": "691f0ce82a7d36aefce53955",
+      "title": "Project SYB weekly call - 2025/06/26 08:53 BST – Transcript",
+      "date": "2025-06-26 08:14:34+00:00",
+      "failure_reason": "Transcript가 너무 짧음 (196자)",
+      "transcript_length": 196
+    },
+    {
+      "id": "691f0ce82a7d36aefce53958",
+      "title": "Project SYB weekly call - 2025/07/24 09:35 BST – Transcript",
+      "date": "2025-07-24 08:43:13+00:00",
+      "failure_reason": "Transcript가 너무 짧음 (191자)",
+      "transcript_length": 191
+    },
+    {
+      "id": "691f0ce82a7d36aefce5395a",
+      "title": "Project SYB weekly call - 2025/07/31 09:02 BST – Transcript",
+      "date": "2025-07-31 09:36:44+00:00",
+      "failure_reason": "Transcript가 너무 짧음 (191자)",
+      "transcript_length": 191
+    },
+    {
+      "id": "691f0ce82a7d36aefce5396d",
+      "title": "Biweekly Report Generator_Ale, Jaden - 2025/06/02 13:52 KST - Transcript",
+      "date": "2025-06-02 04:59:40+00:00",
+      "failure_reason": "Transcript가 너무 짧음 (190자)",
+      "transcript_length": 190
+    },
+    {
+      "id": "691f0ce82a7d36aefce53976",
+      "title": "cdz-mctq-xip (2025-07-02 14:50 GMT+2) – Transcript",
+      "date": "2025-07-02 12:56:08+00:00",
+      "failure_reason": "Transcript가 너무 짧음 (193자)",
+      "transcript_length": 193
+    },
+    {
+      "id": "691f0ce82a7d36aefce5397b",
+      "title": "dnj-mezy-ksi (2024-12-03 14:25 GMT+5:30) - Transcript",
+      "date": "2024-12-03 09:00:37+00:00",
+      "failure_reason": "Transcript가 너무 짧음 (190자)",
+      "transcript_length": 190
+    }
+  ]
+}

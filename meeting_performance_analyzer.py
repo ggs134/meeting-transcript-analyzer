@@ -709,7 +709,8 @@ class MeetingPerformanceAnalyzer:
     
     def analyze_participant_performance(self, formatted_text: str, stats: Dict, 
                                        template_override: str = None,
-                                       custom_instructions: str = "") -> Dict[str, Any]:
+                                       custom_instructions: str = "",
+                                       version: str = None) -> Dict[str, Any]:
         """
         Gemini API를 사용하여 참여자들의 성과 분석
         
@@ -718,6 +719,7 @@ class MeetingPerformanceAnalyzer:
             stats: 참여자별 통계
             template_override: 이번 분석에만 사용할 템플릿 (선택)
             custom_instructions: 추가 지시사항 (선택)
+            version: 사용할 템플릿 버전 (None이면 최신 버전)
             
         Returns:
             분석 결과 딕셔너리
@@ -731,8 +733,13 @@ class MeetingPerformanceAnalyzer:
             template_version = None
         else:
             template_name = template_override or self.prompt_config.default_template
-            # "latest" 문자열 처리
-            if self.prompt_config.default_version == "latest":
+            
+            # 버전 결정 로직:
+            # 1. 인자로 전달된 version이 있으면 최우선 사용
+            # 2. 없으면 config의 default_version 사용 ("latest"면 None으로 처리하여 최신 버전 사용)
+            if version:
+                template_version = version
+            elif self.prompt_config.default_version == "latest":
                 template_version = get_template_version(template_name)
             else:
                 template_version = self.prompt_config.default_version or get_template_version(template_name)
@@ -742,7 +749,7 @@ class MeetingPerformanceAnalyzer:
             formatted_text,
             participants,
             template_override,
-            None,  # version_override는 None (이미 default_version에 설정됨)
+            version,  # 인자로 받은 버전을 전달 (None이면 config의 default_version 사용됨)
             custom_instructions
         )
         
@@ -804,7 +811,8 @@ class MeetingPerformanceAnalyzer:
         pass  # 실제 구현은 analyze_meetings 내부에 있음 (여기서는 생략)
 
     def analyze_aggregated_meetings(self, meetings: List[Dict], template_name: str = "comprehensive_review", 
-                                   custom_instructions: str = "") -> Dict[str, Any]:
+                                   custom_instructions: str = "",
+                                   version: str = None) -> Dict[str, Any]:
         """
         여러 회의를 하나의 텍스트로 합쳐서 종합 분석 (Multi-Meeting Aggregation)
         
@@ -812,6 +820,7 @@ class MeetingPerformanceAnalyzer:
             meetings: 회의 문서 리스트
             template_name: 사용할 템플릿 이름 (기본값: "comprehensive_review")
             custom_instructions: 추가 지시사항
+            version: 사용할 템플릿 버전 (None이면 최신 버전)
             
         Returns:
             종합 분석 결과
@@ -852,7 +861,10 @@ class MeetingPerformanceAnalyzer:
         participants_list = sorted(list(all_participants))
         
         # 템플릿 버전 확인
-        template_version = get_template_version(template_name)
+        if version:
+            template_version = version
+        else:
+            template_version = get_template_version(template_name)
         
         # 프롬프트 설정 업데이트 (일시적)
         original_template = self.prompt_config.default_template
@@ -863,7 +875,7 @@ class MeetingPerformanceAnalyzer:
                 aggregated_transcript,
                 participants_list,
                 template_name,
-                None,
+                version,  # 인자로 받은 버전 사용
                 custom_instructions
             )
             

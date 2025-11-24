@@ -456,7 +456,7 @@ def _interactive_analysis(analyzer, parsed_result):
         all_templates = PromptTemplates.list_templates()
         
         # 분석 모드에 따른 템플릿 필터링
-        aggregated_templates = ['comprehensive_review', 'project_milestone', 'soft_skills_growth']
+        aggregated_templates = ['comprehensive_review', 'project_milestone', 'soft_skills_growth', 'my_summary']
         
         if mode == "1": # 개별 분석
             # 종합 분석용 템플릿 제외
@@ -501,11 +501,84 @@ def _interactive_analysis(analyzer, parsed_result):
             
         print(f"\n✅ 선택된 템플릿: {selected_template}")
         
+        # 버전 선택
+        available_versions = PromptTemplates.list_versions(selected_template)
+        selected_version = None
+        
+        if available_versions:
+            print(f"\n📅 프롬프트 버전 선택 (기본값: latest):")
+            # 최신 버전 확인
+            latest_ver = None
+            # PromptTemplates.list_versions는 정렬된 리스트를 반환함
+            # 하지만 latest 정보는 list_templates나 직접 확인해야 함
+            # 여기서는 간단히 목록만 보여주고 선택하게 함
+            
+            for v in available_versions:
+                print(f"   - {v}")
+            
+            ver_choice = input("버전 입력 (엔터치면 latest 사용): ").strip()
+            if ver_choice:
+                if ver_choice in available_versions:
+                    selected_version = ver_choice
+                    print(f"✅ 선택된 버전: {selected_version}")
+                else:
+                    print(f"⚠️  존재하지 않는 버전입니다. 최신 버전(latest)을 사용합니다.")
+            else:
+                print("✅ 최신 버전(latest)을 사용합니다.")
+        
+        
+        # my_summary 템플릿인 경우 사용자 이름 물어보기
+        user_name_instruction = ""
+        if selected_template == "my_summary":
+            # 참여자 목록 추출
+            all_participants = set()
+            if mode == "1": # 개별 분석 (모든 회의)
+                for m in parsed_meetings:
+                    all_participants.update(m.get('participants', []))
+            elif mode == "2": # 종합 분석 (필터링된 회의)
+                # parsed_meetings는 이미 필터링된 목록임 (test_with_filters의 결과가 parsed_meetings라면)
+                # 하지만 여기서 parsed_meetings는 test_all_transcripts의 결과일 수도 있고 test_with_filters의 결과일 수도 있음
+                # _interactive_analysis의 인자 parsed_result 구조를 확인해야 함
+                # parsed_result['parsed_meetings']가 리스트임
+                for m in parsed_meetings:
+                    all_participants.update(m.get('participants', []))
+            
+            sorted_participants = sorted(list(all_participants))
+            
+            if sorted_participants:
+                print("\n👤 회의록에서 본인의 이름을 선택해주세요:")
+                for i, p in enumerate(sorted_participants, 1):
+                    print(f"{i}. {p}")
+                print(f"{len(sorted_participants) + 1}. 직접 입력")
+                
+                try:
+                    p_choice = input(f"선택 (1~{len(sorted_participants) + 1}): ").strip()
+                    p_idx = int(p_choice) - 1
+                    if 0 <= p_idx < len(sorted_participants):
+                        user_name = sorted_participants[p_idx]
+                    else:
+                        user_name = input("이름 입력: ").strip()
+                except ValueError:
+                    user_name = input("이름 입력: ").strip()
+            else:
+                print("\n👤 회의록에서 본인의 이름(또는 식별자)은 무엇인가요?")
+                user_name = input("입력: ").strip()
+
+            if user_name:
+                user_name_instruction = f"\n\n[User Identification]\nThe user requesting this summary is identified as '{user_name}' in the transcript. Please focus on this person's contributions and tasks when referring to 'I' or 'me'."
+                print(f"✅ 사용자 식별자가 설정되었습니다: '{user_name}'")
+        
         # 추가 요청사항 입력
         print("\n📝 추가 요청사항이 있으신가요? (없으면 엔터)")
         custom_instructions = input("입력: ").strip()
-        if custom_instructions:
-            print(f"✅ 추가 요청사항이 반영됩니다: '{custom_instructions}'")
+        
+        # 사용자 이름 지시사항과 추가 요청사항 합치기
+        full_instructions = custom_instructions
+        if user_name_instruction:
+            full_instructions += user_name_instruction
+            
+        if full_instructions:
+            print(f"✅ 추가 요청사항이 반영됩니다.")
         
         # 분석 실행
         try:
@@ -535,7 +608,8 @@ def _interactive_analysis(analyzer, parsed_result):
                     # 분석 호출
                     result = analyzer.analyze_participant_performance(
                         formatted_text, stats, template_override=selected_template,
-                        custom_instructions=custom_instructions
+                        custom_instructions=full_instructions,
+                        version=selected_version
                     )
                     
                     if result['status'] == 'success':
@@ -596,8 +670,10 @@ def _interactive_analysis(analyzer, parsed_result):
                     continue
                 
                 result = analyzer.analyze_aggregated_meetings(
-                    target_meetings, template_name=selected_template,
-                    custom_instructions=custom_instructions
+                    target_meetings, 
+                    template_name=selected_template,
+                    custom_instructions=full_instructions,
+                    version=selected_version
                 )
                 
                 if result and result['status'] == 'success':

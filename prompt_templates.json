@@ -6,6 +6,13 @@
         "description": "Default - Ideas, work coordination, work reporting, quantitative contribution",
         "created_at": "2025-01-01T00:00:00",
         "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Based on the meeting transcript, extract and organize the following for each participant:\n\n**The goal is to organize what each participant did and what they will do.**\n\n1. Ideas:\n   - New proposals: What new ideas or approaches did they propose?\n   - Improvements and variations: How did they improve or develop existing approaches?\n   - Problem identification and clarification through questions: What questions did they ask to reveal or clarify issues?\n\n2. Work coordination:\n   - Task assignment: Who did they request to do what?\n   - Work scope: What work scope or responsibilities did they define?\n   - Schedule: What schedules or deadlines did they coordinate?\n\n3. Work reporting:\n   - Completed work: What work did they report completing since the last meeting?\n   - Planned work: What work did they say they will do?\n\n4. Quantitative contribution:\n   - When viewing the total as 100, display each participant's speaking volume and contribution relatively\n   - This is a comprehensive measure of speaking frequency and content importance\n\n**Response format:**\n\n[Participant Name]\n1. Ideas\n   - New proposals: (specifically)\n   - Improvements and variations: (specifically)\n   - Problem identification and clarification: (specifically)\n\n2. Work coordination\n   - Task assignment: (to whom, what)\n   - Work scope: (what scope)\n   - Schedule: (by when)\n\n3. Work reporting\n   - Completed work: (what was completed)\n   - Planned work: (plans)\n\n4. Quantitative contribution: X/100 points\n\n---\n\n**Overall summary:**\n- Person who contributed the most in this meeting:\n- Key decisions:\n- Main tasks to be completed before the next meeting:\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Default - Ideas, work coordination, work reporting, quantitative contribution",
+        "created_at": "2025-11-25T00:00:00",
+        "author": "system",
         "is_latest": true
       }
     },
@@ -14,6 +21,13 @@
         "content": "Please clearly organize what **I (the user)** did and what I need to do in this meeting.\n\n**Goal: Understand my contributions and tasks at a glance**\n\nFor each participant:\n\n1. **What I proposed or shared**\n   - New ideas or proposals\n   - Information or data I shared\n   - Issues or questions I raised\n\n2. **Tasks I took on**\n   - New tasks I received in this meeting\n   - Deadlines and priorities\n   - Areas requiring collaboration\n\n3. **What I reported completing**\n   - Work I completed since the last meeting\n   - Status of ongoing work\n\n4. **What I need to do next**\n   - Clear action items\n   - What I need to prepare\n   - What I need to check\n\n5. **Speaking proportion**\n   - My speaking volume in this meeting (percentage of total)\n\n**Response format:**\nOrganize by participant according to the above items.\nEspecially for myself (the person viewing the transcript), provide more detail.\n\n**Additionally:**\n- Did I miss anything?\n- Areas where I could have contributed more",
         "description": "My performance summary - Understanding what I did and what I need to do",
         "created_at": "2025-01-01T00:00:00",
+        "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please clearly organize what **I (the user)** did and what I need to do in this meeting.\n\n**Goal: Understand my contributions and tasks at a glance**\n\nFor each participant:\n\n1. **What I proposed or shared**\n   - New ideas or proposals\n   - Information or data I shared\n   - Issues or questions I raised\n\n2. **Tasks I took on**\n   - New tasks I received in this meeting\n   - Deadlines and priorities\n   - Areas requiring collaboration\n\n3. **What I reported completing**\n   - Work I completed since the last meeting\n   - Status of ongoing work\n\n4. **What I need to do next**\n   - Clear action items\n   - What I need to prepare\n   - What I need to check\n\n5. **Speaking proportion**\n   - My speaking volume in this meeting (percentage of total)\n\n**Response format:**\nOrganize by participant according to the above items.\nEspecially for myself (the person viewing the transcript), provide more detail.\n\n**Additionally:**\n- Did I miss anything?\n- Areas where I could have contributed more\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "My performance summary - Understanding what I did and what I need to do",
+        "created_at": "2025-11-25T00:00:00",
         "author": "system",
         "is_latest": true
       }
@@ -24,6 +38,13 @@
         "description": "Team collaboration - Each team member's role and collaboration points",
         "created_at": "2025-01-01T00:00:00",
         "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please identify **what role each team member** is playing and **who they need to collaborate with** in this meeting.\n\n**Goal: Understand team members' roles and collaboration structure**\n\nFor each participant:\n\n1. **This person's current role**\n   - Main work areas they handled in this meeting\n   - Major responsibilities they are managing\n   - Areas where they demonstrated expertise\n\n2. **What this person provided**\n   - Content they helped other team members with\n   - Information or resources they shared\n   - Solutions they proposed\n\n3. **What this person needs**\n   - What they requested from other team members\n   - Areas where they need help\n   - Work requiring collaboration\n\n4. **Collaboration relationships**\n   - Who they are working with\n   - What areas they are collaborating on\n   - Points to note when collaborating\n\n5. **When to contact this person**\n   - What topics to contact them about\n   - What to ask this person\n\n**Response format:**\n[Participant Name]\n- Current role:\n- What they provided:\n- What they need:\n- Collaboration relationships:\n- Contact information:\n\n**Overall team structure:**\n- Summary of main collaboration lines\n- Understanding of information flow\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Team collaboration - Each team member's role and collaboration points",
+        "created_at": "2025-11-25T00:00:00",
+        "author": "system",
         "is_latest": true
       }
     },
@@ -32,6 +53,13 @@
         "content": "Please clearly organize **who needs to do what** in this meeting.\n\n**Goal: Clarify action items and responsible parties**\n\nFor each participant:\n\n1. **Assigned action items**\n   - Specific list of tasks to complete\n   - Deadline for each task\n   - Priority (high/medium/low)\n\n2. **Prerequisites**\n   - What is needed before starting this task\n   - Whether they need to wait for someone else's work\n   - Required resources or information\n\n3. **Collaboration requirements**\n   - Whose help is needed\n   - What areas require collaboration\n   - When collaboration is needed\n\n4. **Deliverables**\n   - What is the output of this task\n   - Who to deliver it to\n   - In what format to deliver\n\n5. **Checkpoints**\n   - Whether intermediate review is needed\n   - When to share progress\n\n**Response format:**\n[Participant Name]\n□ [Priority] Action item (Deadline: Month Day)\n  - Prerequisites:\n  - Collaboration:\n  - Deliverables:\n  - Checkpoints:\n\n**Overall timeline:**\n- What needs to be done this week\n- What needs to be done next week\n- What needs to be completed before the next meeting",
         "description": "Action items - Who needs to do what by when",
         "created_at": "2025-01-01T00:00:00",
+        "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please clearly organize **who needs to do what** in this meeting.\n\n**Goal: Clarify action items and responsible parties**\n\nFor each participant:\n\n1. **Assigned action items**\n   - Specific list of tasks to complete\n   - Deadline for each task\n   - Priority (high/medium/low)\n\n2. **Prerequisites**\n   - What is needed before starting this task\n   - Whether they need to wait for someone else's work\n   - Required resources or information\n\n3. **Collaboration requirements**\n   - Whose help is needed\n   - What areas require collaboration\n   - When collaboration is needed\n\n4. **Deliverables**\n   - What is the output of this task\n   - Who to deliver it to\n   - In what format to deliver\n\n5. **Checkpoints**\n   - Whether intermediate review is needed\n   - When to share progress\n\n**Response format:**\n[Participant Name]\n□ [Priority] Action item (Deadline: Month Day)\n  - Prerequisites:\n  - Collaboration:\n  - Deliverables:\n  - Checkpoints:\n\n**Overall timeline:**\n- What needs to be done this week\n- What needs to be done next week\n- What needs to be completed before the next meeting\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Action items - Who needs to do what by when",
+        "created_at": "2025-11-25T00:00:00",
         "author": "system",
         "is_latest": true
       }
@@ -42,6 +70,13 @@
         "description": "Knowledge organization - Shared information and insights",
         "created_at": "2025-01-01T00:00:00",
         "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please organize the **knowledge, information, and insights** shared in this meeting.\n\n**Goal: Make knowledge from the meeting easy to reference later**\n\nFor each participant:\n\n1. **Expert knowledge shared**\n   - What professional information did they provide?\n   - Data or cases worth referencing\n   - Useful tools or methodologies\n\n2. **Insights presented**\n   - New perspectives on problems\n   - Interesting discoveries or patterns\n   - Implications\n\n3. **Resources shared**\n   - Documents, links, or materials mentioned\n   - Tools or services recommended\n   - Reference materials\n\n4. **Background explanations**\n   - Explanations helpful for understanding context\n   - Related history or experiences\n\n5. **What was learned / discovered**\n   - What was newly learned from this person's statements\n   - Tips or know-how worth remembering\n\n**Response format:**\n[Participant Name]\n📚 Expert knowledge:\n💡 Insights:\n📎 Resources:\n📖 Background explanation:\n✅ What was learned:\n\n**Overall meeting summary:**\n- Top 3 key learnings\n- Most useful information\n- List of materials to reference later\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Knowledge organization - Shared information and insights",
+        "created_at": "2025-11-25T00:00:00",
+        "author": "system",
         "is_latest": true
       }
     },
@@ -50,6 +85,13 @@
         "content": "Please organize the **decisions made and their background** in this meeting.\n\n**Goal: Be able to understand later why such decisions were made**\n\nFor each participant:\n\n1. **Options proposed**\n   - What choices did they propose?\n   - Pros and cons of each option\n   - Recommended direction\n\n2. **Evidence contributing to decisions**\n   - What evidence or data did they present?\n   - Risks or opportunities to consider\n   - Past experiences or cases\n\n3. **Opinions and perspectives**\n   - This person's position\n   - Concerns\n   - Points they emphasized\n\n**Decisions:**\nFor each decision:\n✅ Decision: (what was decided)\n📋 Background: (why this decision was made)\n👥 Key contributors: (who played important roles)\n⚠️ Considerations: (points to note)\n🔄 Alternatives: (other options discussed)\n📅 Review point: (when to review again)\n\n**Response format:**\nClear list of decisions → Background and contributors for each decision\n\n**Discussed but not decided:**\n- Items requiring further discussion\n- Issues deferred",
         "description": "Decision tracking - What was decided and why",
         "created_at": "2025-01-01T00:00:00",
+        "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please organize the **decisions made and their background** in this meeting.\n\n**Goal: Be able to understand later why such decisions were made**\n\nFor each participant:\n\n1. **Options proposed**\n   - What choices did they propose?\n   - Pros and cons of each option\n   - Recommended direction\n\n2. **Evidence contributing to decisions**\n   - What evidence or data did they present?\n   - Risks or opportunities to consider\n   - Past experiences or cases\n\n3. **Opinions and perspectives**\n   - This person's position\n   - Concerns\n   - Points they emphasized\n\n**Decisions:**\nFor each decision:\n✅ Decision: (what was decided)\n📋 Background: (why this decision was made)\n👥 Key contributors: (who played important roles)\n⚠️ Considerations: (points to note)\n🔄 Alternatives: (other options discussed)\n📅 Review point: (when to review again)\n\n**Response format:**\nClear list of decisions → Background and contributors for each decision\n\n**Discussed but not decided:**\n- Items requiring further discussion\n- Issues deferred\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Decision tracking - What was decided and why",
+        "created_at": "2025-11-25T00:00:00",
         "author": "system",
         "is_latest": true
       }
@@ -60,6 +102,13 @@
         "description": "Quick summary - Understand meeting in 5 minutes",
         "created_at": "2025-01-01T00:00:00",
         "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please **quickly summarize** this meeting.\n\n**Goal: Understand meeting content in 5 minutes**\n\nOne-line summary for each participant:\n\n[Participant Name]\n- Did: (past)\n- Will do: (future)\n- Contribution: (key points)\n\n**Meeting key summary:**\n\n1. **Main discussion topics** (2-3 lines)\n\n2. **Decisions made**\n   - Decision 1\n   - Decision 2\n   - Decision 3\n\n3. **Next actions**\n   - [Responsible person] Task to do (deadline)\n   - [Responsible person] Task to do (deadline)\n   - [Responsible person] Task to do (deadline)\n\n4. **Before next meeting**\n   - What needs to be completed\n   - What needs to be prepared\n\n**Notes:**\n- What must not be missed\n- What to remember\n\nBe concise and focus on the essentials!\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Quick summary - Understand meeting in 5 minutes",
+        "created_at": "2025-11-25T00:00:00",
+        "author": "system",
         "is_latest": true
       }
     },
@@ -68,6 +117,13 @@
         "content": "Please understand the **context and flow** of this meeting.\n\n**Goal: Understand how the meeting progressed**\n\nFor each participant:\n\n1. **Flow in the meeting**\n   - What did they do in the early part of the meeting?\n   - What about the middle part?\n   - What about the later part?\n\n2. **Contribution style to discussion**\n   - Did they mainly ask questions or make proposals?\n   - Did they respond to others' opinions?\n   - Did they start new topics?\n\n3. **Impact on discussion flow**\n   - Did the discussion direction change due to this person's statements?\n   - What issues did they highlight?\n\n**Overall meeting flow:**\n\n**Start** (first 10 minutes)\n- Main agenda:\n- Atmosphere:\n\n**Development** (middle part)\n- Main discussions:\n- Conflicts or differences of opinion:\n- Consensus process:\n\n**Conclusion** (later part)\n- Conclusions:\n- Remaining tasks:\n\n**Notable points:**\n- Unexpected aspects\n- Important turning points\n- Unresolved issues",
         "description": "Meeting context - Discussion flow and development process",
         "created_at": "2025-01-01T00:00:00",
+        "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please understand the **context and flow** of this meeting.\n\n**Goal: Understand how the meeting progressed**\n\nFor each participant:\n\n1. **Flow in the meeting**\n   - What did they do in the early part of the meeting?\n   - What about the middle part?\n   - What about the later part?\n\n2. **Contribution style to discussion**\n   - Did they mainly ask questions or make proposals?\n   - Did they respond to others' opinions?\n   - Did they start new topics?\n\n3. **Impact on discussion flow**\n   - Did the discussion direction change due to this person's statements?\n   - What issues did they highlight?\n\n**Overall meeting flow:**\n\n**Start** (first 10 minutes)\n- Main agenda:\n- Atmosphere:\n\n**Development** (middle part)\n- Main discussions:\n- Conflicts or differences of opinion:\n- Consensus process:\n\n**Conclusion** (later part)\n- Conclusions:\n- Remaining tasks:\n\n**Notable points:**\n- Unexpected aspects\n- Important turning points\n- Unresolved issues\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Meeting context - Discussion flow and development process",
+        "created_at": "2025-11-25T00:00:00",
         "author": "system",
         "is_latest": true
       }
@@ -78,6 +134,13 @@
         "description": "Comprehensive Review - Long-term performance and growth analysis",
         "created_at": "2025-01-01T00:00:00",
         "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please analyze the **comprehensive performance and growth** of participants across these multiple meetings.\n\n**Goal: Evaluate long-term contribution and growth**\n\nFor each participant:\n\n1. **Consistent Contributions**\n   - Areas where they consistently contributed across meetings\n   - Their unique role or position within the team\n\n2. **Key Achievements**\n   - Problems solved or tasks completed over the period\n   - Impact of their suggestions on the final outcome\n\n3. **Leadership & Initiative**\n   - Instances where they led the discussion or team\n   - Proactive proposals and their follow-through\n\n4. **Growth Areas**\n   - Improvements observed from early to later meetings\n   - Changes in attitude or engagement level\n\n**Response format:**\n[Participant Name]\n- Consistent Contributions:\n- Key Achievements:\n- Leadership & Initiative:\n- Growth Areas:\n\n**Overall Team Evolution:**\n- How the team's dynamic changed over time\n- Key turning points in the project/period\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Comprehensive Review - Long-term performance and growth analysis",
+        "created_at": "2025-11-25T00:00:00",
+        "author": "system",
         "is_latest": true
       }
     },
@@ -87,6 +150,13 @@
         "description": "Project Milestone - Contribution to project goals and timeline",
         "created_at": "2025-01-01T00:00:00",
         "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please analyze the **project contribution and milestone achievement** across these meetings.\n\n**Goal: Track project progress and individual contributions**\n\nFor each participant:\n\n1. **Problem Solving**\n   - Key technical or logical problems they solved\n   - Critical decisions they influenced\n\n2. **Blocker Removal**\n   - How they helped remove obstacles for the team\n   - Resources or support they provided\n\n3. **Schedule Management**\n   - Contributions to keeping the project on track\n   - Handling of deadlines and milestones\n\n4. **Quality Assurance**\n   - Suggestions that improved the quality of the result\n   - Attention to detail and risk management\n\n**Response format:**\n[Participant Name]\n- Problem Solving:\n- Blocker Removal:\n- Schedule Management:\n- Quality Assurance:\n\n**Project Trajectory:**\n- Major milestones achieved during this period\n- Current status and next critical steps\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Project Milestone - Contribution to project goals and timeline",
+        "created_at": "2025-11-25T00:00:00",
+        "author": "system",
         "is_latest": true
       }
     },
@@ -95,6 +165,13 @@
         "content": "Please analyze the **soft skills, communication style, and leadership growth** of participants.\n\n**Goal: Evaluate qualitative growth and team dynamics**\n\nFor each participant:\n\n1. **Communication Style**\n   - How they articulate ideas (persuasiveness, clarity)\n   - Listening skills and responsiveness to others\n   - Changes in communication style over time\n\n2. **Conflict Resolution**\n   - How they handled disagreements or conflicts\n   - Ability to mediate and find consensus\n\n3. **Influence & Teamwork**\n   - Positive influence on team morale\n   - Supportiveness and collaboration with others\n\n4. **Attitude Shift**\n   - Shift from passive to active participation (if any)\n   - Willingness to take ownership\n\n**Response format:**\n[Participant Name]\n- Communication Style:\n- Conflict Resolution:\n- Influence & Teamwork:\n- Attitude Shift:\n\n**Team Culture Observation:**\n- General communication atmosphere\n- Suggestions for improving team dynamics",
         "description": "Soft Skills Growth - Communication and leadership analysis",
         "created_at": "2025-01-01T00:00:00",
+        "author": "system",
+        "is_latest": false
+      },
+      "1.1": {
+        "content": "Please analyze the **soft skills, communication style, and leadership growth** of participants.\n\n**Goal: Evaluate qualitative growth and team dynamics**\n\nFor each participant:\n\n1. **Communication Style**\n   - How they articulate ideas (persuasiveness, clarity)\n   - Listening skills and responsiveness to others\n   - Changes in communication style over time\n\n2. **Conflict Resolution**\n   - How they handled disagreements or conflicts\n   - Ability to mediate and find consensus\n\n3. **Influence & Teamwork**\n   - Positive influence on team morale\n   - Supportiveness and collaboration with others\n\n4. **Attitude Shift**\n   - Shift from passive to active participation (if any)\n   - Willingness to take ownership\n\n**Response format:**\n[Participant Name]\n- Communication Style:\n- Conflict Resolution:\n- Influence & Teamwork:\n- Attitude Shift:\n\n**Team Culture Observation:**\n- General communication atmosphere\n- Suggestions for improving team dynamics\n\n**Important Note:**\n- When mentioning deadlines or dates, **calculate the specific date (YYYY-MM-DD) based on the meeting date**.\n- Do NOT use relative terms like 'next week', 'tomorrow', or 'this weekend'.",
+        "description": "Soft Skills Growth - Communication and leadership analysis",
+        "created_at": "2025-11-25T00:00:00",
         "author": "system",
         "is_latest": true
       }

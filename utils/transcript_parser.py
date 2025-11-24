@@ -278,6 +278,107 @@ def build_filters(analyzer=None):
     return filters, post_filters
 
 
+
+def _select_individual_meeting(analyzer):
+    """
+    페이지네이션을 사용하여 개별 회의 선택
+    
+    Args:
+        analyzer: MeetingPerformanceAnalyzer 인스턴스
+        
+    Returns:
+        선택된 회의 문서 또는 None (취소 시)
+    """
+    # 모든 회의 가져오기 (최신순)
+    all_meetings = list(analyzer.collection.find())
+    
+    # Sort by date or createdTime (support both schemas)
+    all_meetings.sort(key=lambda m: m.get('date') or m.get('createdTime') or '', reverse=True)
+    
+    if not all_meetings:
+        print("❌ 회의 데이터가 없습니다.")
+        return None
+    
+    page_size = 5
+    current_page = 0
+    total_pages = (len(all_meetings) + page_size - 1) // page_size
+    
+    while True:
+        # 현재 페이지의 회의 목록
+        start_idx = current_page * page_size
+        end_idx = min(start_idx + page_size, len(all_meetings))
+        page_meetings = all_meetings[start_idx:end_idx]
+        
+        # 페이지 표시
+        print("\n" + "="*80)
+        print(f"📋 회의 목록 (페이지 {current_page + 1}/{total_pages})")
+        print("="*80)
+        
+        for i, meeting in enumerate(page_meetings, 1):
+            global_idx = start_idx + i
+            # Support both Google Drive schema (name/content/createdTime) and standard schema (title/transcript/date)
+            title = meeting.get('title') or meeting.get('name', 'Untitled')
+            date = meeting.get('date') or meeting.get('createdTime', 'Unknown Date')
+            if hasattr(date, 'strftime'):
+                date = date.strftime('%Y-%m-%d %H:%M')
+            
+            # Participants: try to get from field or extract from transcript/content
+            participants = meeting.get('participants', [])
+            if not participants:
+                # Try to extract from transcript
+                import re
+                transcript = meeting.get('transcript') or meeting.get('content', '')
+                if transcript:
+                    # Quick extraction of unique speakers (simplified)
+                    speaker_pattern = r'\[[\d:]+\]\s*([^:]+):'
+                    matches = re.findall(speaker_pattern, transcript[:5000])  # First 5000 chars
+                    participants = list(dict.fromkeys(matches))  # Preserve order, remove duplicates
+            
+            participants_str = ', '.join(participants[:3]) if participants else '참여자 정보 없음'
+            if len(participants) > 3:
+                participants_str += f' (+{len(participants) - 3}명)'
+            
+            print(f"{global_idx}. {title}")
+            print(f"   📅 {date}")
+            print(f"   👥 {participants_str}")
+            print()
+        
+        # 네비게이션 옵션
+        print("-" * 80)
+        nav_options = []
+        if current_page > 0:
+            nav_options.append("p (이전 페이지)")
+        if current_page < total_pages - 1:
+            nav_options.append("n (다음 페이지)")
+        nav_options.append("숫자 (회의 선택)")
+        nav_options.append("0 (취소)")
+        
+        print("옵션: " + " | ".join(nav_options))
+        
+        try:
+            choice = input("\n선택: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            return None
+        
+        if choice == '0':
+            return None
+        elif choice == 'n' and current_page < total_pages - 1:
+            current_page += 1
+        elif choice == 'p' and current_page > 0:
+            current_page -= 1
+        elif choice.isdigit():
+            idx = int(choice) - 1
+            if 0 <= idx < len(all_meetings):
+                selected = all_meetings[idx]
+                title = selected.get('title', 'Untitled')
+                print(f"\n✅ 선택된 회의: {title}")
+                return selected
+            else:
+                print(f"⚠️  잘못된 번호입니다. 1~{len(all_meetings)} 사이의 숫자를 입력하세요.")
+        else:
+            print("⚠️  잘못된 입력입니다.")
+
+
 def _get_analyzer():
     """
     환경 변수에서 설정을 읽어 MeetingPerformanceAnalyzer 인스턴스 생성
@@ -409,13 +510,14 @@ def _ask_save_option(prompt):
     return choice == 'y' or choice == 'yes'
 
 
-def _interactive_analysis(analyzer, parsed_result):
+def _interactive_analysis(analyzer, parsed_result, skip_mode_selection=False):
     """
     파싱된 결과에 대해 대화형으로 분석 수행
     
     Args:
         analyzer: MeetingPerformanceAnalyzer 인스턴스
         parsed_result: 파싱 결과 딕셔너리
+        skip_mode_selection: True이면 개별 분석 모드로 바로 진행 (개별 회의 선택 시)
     """
     # 파싱된 회의가 없으면 종료
     if not parsed_result or not parsed_result.get('parsed_meetings'):
@@ -432,25 +534,35 @@ def _interactive_analysis(analyzer, parsed_result):
     if not _ask_save_option("AI 분석을 실행하시겠습니까?"):
         return
 
-    while True:
-        print("\n📊 분석 모드 선택:")
-        print("1. 개별 회의 분석 (각 회의별로 분석 리포트 생성)")
-        print("2. 종합 분석 (모든 회의를 합쳐서 하나의 리포트 생성)")
-        print("0. 취소")
-        
-        try:
-            mode = input("\n선택 (1/2/0): ").strip()
-        except (EOFError, KeyboardInterrupt):
-            mode = "0"
-        
-        if mode == "0":
-            print("분석을 취소합니다.")
-            return
-        
-        if mode not in ["1", "2"]:
-            print("잘못된 선택입니다.")
-            continue
+    # 개별 회의 선택 모드이거나 회의가 1개인 경우 모드 선택 스킵
+    if skip_mode_selection or meeting_count == 1:
+        mode = "1"  # 개별 분석 모드로 고정
+        if skip_mode_selection:
+            print("\n📊 개별 회의 분석 모드로 진행합니다.")
+    else:
+        while True:
+            print("\n📊 분석 모드 선택:")
+            print("1. 개별 회의 분석 (각 회의별로 분석 리포트 생성)")
+            print("2. 종합 분석 (모든 회의를 합쳐서 하나의 리포트 생성)")
+            print("0. 취소")
             
+            try:
+                mode = input("\n선택 (1/2/0): ").strip()
+            except (EOFError, KeyboardInterrupt):
+                mode = "0"
+            
+            if mode == "0":
+                print("분석을 취소합니다.")
+                return
+            
+            if mode not in ["1", "2"]:
+                print("잘못된 선택입니다.")
+                continue
+            
+            break
+            
+    # 템플릿 선택 루프
+    while True:
         # 템플릿 선택
         print("\n📝 프롬프트 템플릿 선택:")
         all_templates = PromptTemplates.list_templates()
@@ -751,11 +863,12 @@ def main():
         print("분석 옵션을 선택하세요:")
         print("  1️⃣  모든 회의 transcript 분석")
         print("  2️⃣  필터를 사용한 분석 (날짜, 제목, 참여자 등)")
+        print("  3️⃣  개별 회의 선택")
         print("  0️⃣  종료")
         print("="*50)
         
         try:
-            choice = input("\n선택 (1, 2, 0): ").strip()
+            choice = input("\n선택 (1, 2, 3, 0): ").strip()
         except (EOFError, KeyboardInterrupt):
             choice = '0'
         
@@ -763,7 +876,7 @@ def main():
             print("\n프로그램을 종료합니다.")
             break
             
-        if choice not in ['1', '2']:
+        if choice not in ['1', '2', '3']:
             print("잘못된 선택입니다. 다시 선택해주세요.")
             continue
     
@@ -790,6 +903,55 @@ def main():
                     post_filters=post_filters,
                     output_dir=output_dir
                 )
+            elif choice == '3':
+                # 개별 회의 선택
+                selected_meeting = _select_individual_meeting(analyzer)
+                
+                if selected_meeting is None:
+                    print("\n⏪ 회의 선택이 취소되었습니다. 메인 메뉴로 돌아갑니다.")
+                    continue
+                
+                # 선택된 회의를 파싱
+                # Support both Google Drive schema (content) and standard schema (transcript)
+                transcript = selected_meeting.get('transcript') or selected_meeting.get('content', '')
+                if not transcript:
+                    print("❌ 선택된 회의에 transcript가 없습니다.")
+                    continue
+                
+                print(f"\n🔄 회의 파싱 중...")
+                parsed_transcript = analyzer.parse_transcript(transcript)
+                
+                if not parsed_transcript:
+                    print("❌ 파싱 실패: transcript를 파싱할 수 없습니다.")
+                    continue
+                
+                # 참여자 통계 계산
+                participant_stats = analyzer.extract_participant_stats(parsed_transcript)
+                
+                # 파싱 결과 구성 (support both schemas)
+                parsed_meeting = {
+                    'id': str(selected_meeting.get('_id', '')),
+                    'title': selected_meeting.get('title') or selected_meeting.get('name', 'Untitled'),
+                    'date': selected_meeting.get('date') or selected_meeting.get('createdTime', 'Unknown'),
+                    'participants': list(participant_stats.keys()),
+                    'parsed_transcript': parsed_transcript,
+                    'participant_stats': participant_stats
+                }
+                
+                result = {
+                    'meetings': [selected_meeting],
+                    'parsed_meetings': [parsed_meeting],
+                    'total_count': 1,
+                    'parsed_count': 1,
+                    'failed_count': 0
+                }
+                
+                # 대화형 분석 실행 (개별 회의이므로 모드 선택 스킵)
+                _interactive_analysis(analyzer, result, skip_mode_selection=True)
+                
+                # 저장 옵션은 스킵 (개별 회의는 저장 불필요)
+                print("\n✅ 분석 완료!")
+                
             else:
                 # Output 디렉토리 설정
                 output_dir = os.path.join(os.getcwd(), "output")

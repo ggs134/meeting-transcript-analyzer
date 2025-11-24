@@ -531,7 +531,8 @@ def test_with_filters(analyzer, filters, post_filters=None, output_dir=None):
                 "total_statements": len(parsed_transcript),
                 "participant_stats": {k: {
                     "speak_count": v["speak_count"],
-                    "total_words": v["total_words"]
+                    "total_words": v["total_words"],
+                    "timestamps": v.get("timestamps", [])
                 } for k, v in stats.items()},
                 "parsed_transcript": parsed_transcript
             })

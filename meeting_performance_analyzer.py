@@ -698,7 +698,7 @@ class MeetingPerformanceAnalyzer:
 {speaker}:
   - 발언 횟수: {stat['speak_count']}회
   - 총 발언 단어 수: {stat['total_words']}개
-  - 발언 시간대: {stat['timestamps'][0]} ~ {stat['timestamps'][-1]}
+  - 발언 시간대: {f"{stat['timestamps'][0]} ~ {stat['timestamps'][-1]}" if stat.get('timestamps') else "N/A"}
 """
         
         formatted_text += "\n=== 전체 대화 내용 ===\n"

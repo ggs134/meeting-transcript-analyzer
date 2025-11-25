@@ -12,8 +12,9 @@ A practical tool for practitioners to **organize work**, **understand colleagues
 
 ## 🌟 Key Features
 
-### 8 Practical Prompt Templates
+### 11 Practical Prompt Templates
 
+#### Individual Analysis Templates (8)
 | Template | Purpose | When to Use |
 |----------|---------|-------------|
 | **default** ⭐ | Overall work organization | After general team meetings |
@@ -24,6 +25,13 @@ A practical tool for practitioners to **organize work**, **understand colleagues
 | **decision_log** | Track decisions | Why was this decided |
 | **quick_recap** | Quick summary | Understand in 5 minutes |
 | **meeting_context** | Meeting context | Understand discussion flow |
+
+#### Aggregated Analysis Templates (3)
+| Template | Purpose | When to Use |
+|----------|---------|-------------|
+| **comprehensive_review** | Long-term performance review | Evaluate growth across multiple meetings |
+| **project_milestone** | Project progress tracking | Track project contributions and milestones |
+| **soft_skills_growth** | Soft skills assessment | Analyze communication and leadership growth |
 
 ## 🚀 Quick Start
 
@@ -63,7 +71,34 @@ python team_report/generate_team_report.py
 
 👉 [Team Report Generation Guide](team_report/TEAM_REPORT_GUIDE.md)
 
-### 4. Batch Analysis with Various Templates
+### 5. Interactive Transcript Parser 🆕
+
+Analyze meetings interactively with filters, template selection, and version control.
+
+```bash
+python utils/transcript_parser.py
+```
+
+**Features:**
+- **3 Analysis Modes:**
+  1. Analyze all meetings
+  2. Filter-based analysis (date, title, participants)
+  3. Individual meeting selection (with pagination)
+- **Template Selection:** Choose from 11 templates
+- **Version Selection:** Select specific template version or use latest
+- **Custom Instructions:** Add specific analysis requirements
+- **Participant Selection:** For `my_summary` template, select your name from extracted participants
+- **Auto-save:** Results saved to `output/` directory
+
+**Example Workflow:**
+1. Select analysis mode (e.g., "3. Individual meeting selection")
+2. Browse meetings with pagination (5 per page)
+3. Select a meeting
+4. Choose template (e.g., "my_summary")
+5. Select version (default: latest)
+6. View analysis results immediately
+
+### 6. Batch Analysis with Various Templates
 
 You can analyze meetings with multiple templates (collaboration, action items, knowledge base, etc.) at once using the `utils/run_analysis.py` script.
 
@@ -79,7 +114,7 @@ This script sequentially executes the following templates and outputs the analys
 - `quick_recap`
 - `meeting_context`
 
-### 5. Analyze My Meetings
+### 7. Analyze My Meetings
 
 ```python
 from meeting_performance_analyzer import MeetingPerformanceAnalyzer
@@ -246,6 +281,21 @@ How the discussion flowed.
 **Output:** Meeting flow (Start/Middle/End), Contribution style, Turning points, Consensus process.
 **Usage:** Reviewing decision-making process.
 
+### 9. **comprehensive_review** - Comprehensive Review (Aggregated)
+Long-term performance and growth across multiple meetings.
+**Output:** Consistent contributions, Key achievements, Leadership, Growth areas, Team evolution.
+**Usage:** Performance reviews, Team retrospectives.
+
+### 10. **project_milestone** - Project Milestone (Aggregated)
+Project progress and contributions across multiple meetings.
+**Output:** Project contributions, Current responsibilities, Collaboration, Progress velocity, Quality impact.
+**Usage:** Project status reports, Sprint reviews.
+
+### 11. **soft_skills_growth** - Soft Skills Growth (Aggregated)
+Communication style and leadership development over time.
+**Output:** Communication style, Collaboration skills, Leadership, Problem-solving, Growth trajectory.
+**Usage:** Professional development, Team dynamics analysis.
+
 ## 🎯 Situational Usage Guide
 
 ### Immediately After Meeting
@@ -292,6 +342,28 @@ latest_version = get_template_version("default")
 ```
 
 👉 [Template Version Usage Guide](VERSION_USAGE_EXAMPLE.md)
+
+### Date Precision (Version 1.1+)
+
+All templates now calculate specific dates instead of using relative terms:
+
+**Before (v1.0):**
+- "Complete by next week"
+- "Follow up tomorrow"
+
+**After (v1.1):**
+- "Complete by 2025-11-30"
+- "Follow up on 2025-11-26"
+
+This ensures clarity when reviewing past meeting notes.
+
+### Multilingual Prompt Templates
+
+Prompt templates are available in multiple languages:
+- **Korean:** `prompt_md/kr/`
+- **English:** `prompt_md/en/`
+
+Templates are automatically loaded based on your configuration.
 
 ### Participant Name Normalization
 

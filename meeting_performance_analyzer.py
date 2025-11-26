@@ -313,6 +313,9 @@ class MeetingPerformanceAnalyzer:
             
             # Chiko Nakamura 관련 변형들
             "Nakamura Chiko": "Chiko Nakamura",
+
+            # Thomas Shin 관련 변형들
+            "Geonwoo Shin": "Thomas Shin",
             
             # 기타 일반적인 정규화
             # 대괄호와 그 안의 내용 제거 (예: "이낙준[ 정보보호대학원박사과정수료연구(재학) / 정보보호학과 ]" → "이낙준")

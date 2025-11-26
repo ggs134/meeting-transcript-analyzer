@@ -568,7 +568,7 @@ def _interactive_analysis(analyzer, parsed_result, skip_mode_selection=False):
         all_templates = PromptTemplates.list_templates()
         
         # 분석 모드에 따른 템플릿 필터링
-        aggregated_templates = ['comprehensive_review', 'project_milestone', 'soft_skills_growth', 'my_summary']
+        aggregated_templates = ['comprehensive_review', 'project_milestone', 'soft_skills_growth', 'my_summary', 'performance_ranking']
         
         if mode == "1": # 개별 분석
             # 종합 분석용 템플릿 제외

@@ -147,7 +147,7 @@ def build_analyzer(template_name: str = "default", template_version: str = "late
 
 def main():
     # template_keys = ["default", "team_collaboration", "action_items", "knowledge_base", "decision_log"]
-    template_keys = ["team_collaboration", "action_items", "knowledge_base", "decision_log", "quick_recap", "meeting_context"]
+    template_keys = ["team_collaboration", "action_items", "knowledge_base", "decision_log", "quick_recap", "meeting_context", "performance_ranking"]
     #my_summary is missing
 
     template_analyzers = {}

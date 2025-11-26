@@ -555,3 +555,15 @@ results = analyzer.analyze_meetings(meetings)
   - 영향력 및 팀워크 (Influence & Teamwork)
   - 태도 변화 (Attitude Shift)
   - 팀 문화 관찰 (Team Culture Observation)
+
+## 10. 성과 랭킹 (Performance Ranking)
+
+참여자들의 성과를 비교 분석하여 MVP와 개선이 필요한 대상을 식별합니다.
+
+- **템플릿 키**: `performance_ranking`
+- **주요 분석 항목**:
+  - 최고 성과자 (MVP) 및 선정 이유
+  - 성과 저조자 (Needs Improvement) 및 개선 제안
+  - 전체 성과 랭킹 (Performance Ranking)
+  - 성과 격차 분석 (Gap Analysis)
+

@@ -12,7 +12,7 @@ A practical tool for practitioners to **organize work**, **understand colleagues
 
 ## 🌟 Key Features
 
-### 11 Practical Prompt Templates
+### 12 Practical Prompt Templates
 
 #### Individual Analysis Templates (8)
 | Template | Purpose | When to Use |
@@ -26,12 +26,13 @@ A practical tool for practitioners to **organize work**, **understand colleagues
 | **quick_recap** | Quick summary | Understand in 5 minutes |
 | **meeting_context** | Meeting context | Understand discussion flow |
 
-#### Aggregated Analysis Templates (3)
+#### Aggregated Analysis Templates (4)
 | Template | Purpose | When to Use |
 |----------|---------|-------------|
 | **comprehensive_review** | Long-term performance review | Evaluate growth across multiple meetings |
 | **project_milestone** | Project progress tracking | Track project contributions and milestones |
 | **soft_skills_growth** | Soft skills assessment | Analyze communication and leadership growth |
+| **performance_ranking** | Performance ranking | Identify MVP and needs improvement |
 
 ## 🚀 Quick Start
 
@@ -84,7 +85,7 @@ python utils/transcript_parser.py
   1. Analyze all meetings
   2. Filter-based analysis (date, title, participants)
   3. Individual meeting selection (with pagination)
-- **Template Selection:** Choose from 11 templates
+- **Template Selection:** Choose from 12 templates
 - **Version Selection:** Select specific template version or use latest
 - **Custom Instructions:** Add specific analysis requirements
 - **Participant Selection:** For `my_summary` template, select your name from extracted participants
@@ -295,6 +296,11 @@ Project progress and contributions across multiple meetings.
 Communication style and leadership development over time.
 **Output:** Communication style, Collaboration skills, Leadership, Problem-solving, Growth trajectory.
 **Usage:** Professional development, Team dynamics analysis.
+
+### 12. **performance_ranking** - Performance Ranking (Aggregated)
+Identify top and bottom performers across multiple meetings.
+**Output:** MVP (top performer), Needs improvement (bottom performer), Overall ranking, Gap analysis.
+**Usage:** Performance reviews, Team performance assessment.
 
 ## 🎯 Situational Usage Guide
 

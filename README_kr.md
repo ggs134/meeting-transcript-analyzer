@@ -647,6 +647,58 @@ A: `prompt_templates.json` 파일에서 각 템플릿의 여러 버전을 관리
 **Q: analyze_meetings와 analyze_multiple_meetings의 차이는?**
 A: `analyze_multiple_meetings`는 MongoDB 쿼리를 사용하여 데이터를 가져온 후 분석합니다. `analyze_meetings`는 이미 가져온 데이터 리스트를 직접 분석합니다. 같은 데이터를 여러 템플릿으로 분석할 때 유용합니다.
 
+## 🛠️ 개발자 가이드
+
+### 새로운 프롬프트 템플릿 추가하기
+
+시스템에 새로운 프롬프트 템플릿을 추가할 때는 다음 체크리스트를 따라 모든 파일을 업데이트하세요:
+
+#### 1. 프롬프트 파일 생성
+- [ ] **`prompt_md/kr/[TEMPLATE_NAME].md`** - 한국어 버전 프롬프트
+- [ ] **`prompt_md/en/[TEMPLATE_NAME].md`** - 영어 버전 프롬프트
+
+#### 2. 설정 파일 업데이트
+- [ ] **`prompt_templates.json`** - 버전 1.0으로 템플릿 추가 및 `is_latest: true` 설정
+
+#### 3. 문서 업데이트
+- [ ] **`PROMPT_GUIDE.md`** - 템플릿 설명 및 주요 분석 항목 추가
+- [ ] **`README.md`** - 템플릿 개수 업데이트 및 템플릿 테이블에 추가
+- [ ] **`README_kr.md`** - 템플릿 개수 업데이트 및 템플릿 테이블에 추가 (한국어)
+
+#### 4. 코드 업데이트 (해당되는 경우)
+- [ ] **`utils/transcript_parser.py`** - `aggregated_templates` 리스트에 추가 (종합 분석 템플릿인 경우)
+- [ ] **`utils/run_analysis.py`** - `template_keys` 리스트에 추가 (일괄 분석에 포함하려는 경우)
+
+#### 5. 테스트
+- [ ] 새 템플릿이 올바르게 작동하는지 확인하는 테스트 스크립트 작성
+- [ ] 샘플 데이터로 테스트하여 출력이 예상과 일치하는지 확인
+
+#### 예시: `performance_ranking` 템플릿 추가
+
+```bash
+# 1. 프롬프트 파일 생성
+touch prompt_md/kr/PERFORMANCE_RANKING.md
+touch prompt_md/en/PERFORMANCE_RANKING.md
+
+# 2. prompt_templates.json 편집
+# 버전 1.0으로 새 항목 추가
+
+# 3. 문서 업데이트
+# PROMPT_GUIDE.md, README.md, README_kr.md 편집
+
+# 4. 코드 업데이트 (종합 분석 템플릿인 경우)
+# utils/transcript_parser.py 편집
+# utils/run_analysis.py 편집 (선택사항)
+
+# 5. 테스트
+python test_new_template.py
+
+# 6. 커밋 및 푸시
+git add .
+git commit -m "feat: Add [template_name] prompt template"
+git push
+```
+
 ## 🎯 핵심 원칙
 
 1. **평가 X, 정리 O**: "얼마나 잘했나"가 아니라 "무엇을 했나"

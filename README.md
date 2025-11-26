@@ -494,6 +494,58 @@ A: Manage in `prompt_templates.json`. Specify `template_version` or use default 
 **Q: Difference between analyze_meetings and analyze_multiple_meetings?**
 A: `analyze_multiple_meetings` fetches data from MongoDB then analyzes. `analyze_meetings` analyzes already fetched data list.
 
+## 🛠️ Developer Guide
+
+### Adding a New Prompt Template
+
+When adding a new prompt template to the system, follow this checklist to ensure all files are updated:
+
+#### 1. Create Prompt Files
+- [ ] **`prompt_md/kr/[TEMPLATE_NAME].md`** - Korean version of the prompt
+- [ ] **`prompt_md/en/[TEMPLATE_NAME].md`** - English version of the prompt
+
+#### 2. Update Configuration
+- [ ] **`prompt_templates.json`** - Add template with version 1.0 and set `is_latest: true`
+
+#### 3. Update Documentation
+- [ ] **`PROMPT_GUIDE.md`** - Add template description and key analysis items
+- [ ] **`README.md`** - Update template count and add to template table
+- [ ] **`README_kr.md`** - Update template count and add to template table (Korean)
+
+#### 4. Update Code (if applicable)
+- [ ] **`utils/transcript_parser.py`** - Add to `aggregated_templates` list (if it's an aggregated template)
+- [ ] **`utils/run_analysis.py`** - Add to `template_keys` list (if you want it in batch analysis)
+
+#### 5. Test
+- [ ] Create a test script to verify the new template works correctly
+- [ ] Test with sample data to ensure output matches expectations
+
+#### Example: Adding `performance_ranking` Template
+
+```bash
+# 1. Create prompt files
+touch prompt_md/kr/PERFORMANCE_RANKING.md
+touch prompt_md/en/PERFORMANCE_RANKING.md
+
+# 2. Edit prompt_templates.json
+# Add new entry with version 1.0
+
+# 3. Update documentation
+# Edit PROMPT_GUIDE.md, README.md, README_kr.md
+
+# 4. Update code (if aggregated template)
+# Edit utils/transcript_parser.py
+# Edit utils/run_analysis.py (optional)
+
+# 5. Test
+python test_new_template.py
+
+# 6. Commit and push
+git add .
+git commit -m "feat: Add [template_name] prompt template"
+git push
+```
+
 ## 🎯 Core Principles
 
 1. **Organization, Not Evaluation**: "What was done", not "How well it was done".

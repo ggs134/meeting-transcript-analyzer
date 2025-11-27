@@ -83,15 +83,16 @@ def build_filters(analyzer=None):
         print("   c. 이번 주")
         print("   d. 이번 달")
         print("   e. 올해")
-        print("   x. 취소")
+        print("   x. 취소 (메인 메뉴로 돌아가기)")
         
         try:
             date_choice = input("   선택 (a/b/c/d/e/x): ").strip().lower()
         except (EOFError, KeyboardInterrupt):
-            date_choice = "a"
+            date_choice = "x"
         
         if date_choice == "x" or date_choice == "cancel":
-            print("   ⏪ 날짜 필터 선택을 취소했습니다.")
+            print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+            return None, None
         else:
             from datetime import timedelta
             
@@ -141,7 +142,7 @@ def build_filters(analyzer=None):
     # 2. 제목 키워드 필터
     if '2' in choice_list:
         try:
-            keyword = input("\n📝 제목 키워드 (부분 일치, x로 취소): ").strip()
+            keyword = input("\n📝 제목 키워드 (부분 일치, x로 취소/메인 메뉴로 돌아가기): ").strip()
             if keyword and keyword.lower() not in ['x', 'cancel']:
                 # title 또는 name 필드에 키워드가 포함된 경우
                 title_filter = {
@@ -162,36 +163,55 @@ def build_filters(analyzer=None):
                     filters = title_filter
                 print(f"   ✅ 제목 키워드 필터 적용: '{keyword}'")
             elif keyword.lower() in ['x', 'cancel']:
-                print("   ⏪ 제목 키워드 필터 선택을 취소했습니다.")
+                print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                return None, None
         except (EOFError, KeyboardInterrupt):
-            pass
+            print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+            return None, None
     
     # 3. 특정 참여자 포함 필터
     if '3' in choice_list:
         try:
+            # 먼저 취소 옵션 확인 (DB 조회 전에)
+            print("\n👤 참여자 필터")
+            print("   옵션:")
+            print("   - 참여자 목록에서 선택")
+            print("   - 직접 입력")
+            print("   x. 취소 (메인 메뉴로 돌아가기)")
+            
+            initial_choice = input("   선택 (Enter로 계속, x로 취소): ").strip().lower()
+            if initial_choice in ['x', 'cancel']:
+                print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                return None, None
+            
             if analyzer:
-                # 참여자 목록 가져오기
+                # 참여자 목록 가져오기 (취소 확인 후에만)
                 participants_list = get_all_participants(analyzer)
                 
                 if not participants_list:
                     print("\n   ⚠️  참여자 목록을 가져올 수 없습니다. 이름을 직접 입력하세요.")
-                    participant = input("   👤 참여자 이름 (정확히 일치): ").strip()
-                    if participant:
+                    participant = input("   👤 참여자 이름 (정확히 일치, x로 취소/메인 메뉴로 돌아가기): ").strip()
+                    if participant and participant.lower() not in ['x', 'cancel']:
                         post_filters['participants'] = participant
                         print(f"   ✅ 참여자 필터 적용: '{participant}'")
                         print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
+                    elif participant.lower() in ['x', 'cancel']:
+                        print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                        return None, None
                 else:
                     print(f"\n👤 참여자 목록 ({len(participants_list)}명):")
                     for i, p in enumerate(participants_list, 1):
                         print(f"   {i:3d}. {p}")
                     
                     try:
-                        choice_input = input("\n   선택하세요 (번호, 여러 개 선택 가능: 1,3,5 또는 Enter로 직접 입력, x로 취소): ").strip()
+                        choice_input = input("\n   선택하세요 (번호, 여러 개 선택 가능: 1,3,5 또는 Enter로 직접 입력, x로 취소/메인 메뉴로 돌아가기): ").strip()
                     except (EOFError, KeyboardInterrupt):
-                        choice_input = ""
+                        print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                        return None, None
                     
                     if choice_input and choice_input.lower() in ['x', 'cancel']:
-                        print("   ⏪ 참여자 필터 선택을 취소했습니다.")
+                        print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                        return None, None
                     elif choice_input:
                         # 번호로 선택
                         try:
@@ -213,38 +233,49 @@ def build_filters(analyzer=None):
                         except (ValueError, IndexError):
                             # 번호가 아니면 직접 입력으로 처리
                             participant = choice_input
+                            if participant.lower() in ['x', 'cancel']:
+                                print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                                return None, None
                             post_filters['participants'] = participant
                             print(f"   ✅ 참여자 필터 적용: '{participant}'")
                             print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
                     else:
                         # 직접 입력
-                        participant = input("   👤 참여자 이름 (정확히 일치, x로 취소): ").strip()
+                        participant = input("   👤 참여자 이름 (정확히 일치, x로 취소/메인 메뉴로 돌아가기): ").strip()
                         if participant and participant.lower() not in ['x', 'cancel']:
                             post_filters['participants'] = participant
                             print(f"   ✅ 참여자 필터 적용: '{participant}'")
                             print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
                         elif participant.lower() in ['x', 'cancel']:
-                            print("   ⏪ 참여자 필터 선택을 취소했습니다.")
+                            print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                            return None, None
             else:
                 # analyzer가 없으면 직접 입력
-                participant = input("\n👤 참여자 이름 (정확히 일치, x로 취소): ").strip()
+                participant = input("\n👤 참여자 이름 (정확히 일치, x로 취소/메인 메뉴로 돌아가기): ").strip()
                 if participant and participant.lower() not in ['x', 'cancel']:
                     post_filters['participants'] = participant
                     print(f"   ✅ 참여자 필터 적용: '{participant}'")
                     print("   ⚠️  참여자는 파싱 후 필터링됩니다.")
                 elif participant.lower() in ['x', 'cancel']:
-                    print("   ⏪ 참여자 필터 선택을 취소했습니다.")
+                    print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                    return None, None
         except (EOFError, KeyboardInterrupt):
-            pass
+            print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+            return None, None
     
     # 4. Transcript 길이 필터
     if '4' in choice_list:
         try:
-            min_length = input("\n📏 최소 Transcript 길이 (문자 수, 기본값: 0, x로 취소): ").strip()
+            min_length = input("\n📏 최소 Transcript 길이 (문자 수, 기본값: 0, x로 취소/메인 메뉴로 돌아가기): ").strip()
             if min_length and min_length.lower() in ['x', 'cancel']:
-                print("   ⏪ Transcript 길이 필터 선택을 취소했습니다.")
+                print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                return None, None
             else:
-                max_length = input("   최대 Transcript 길이 (문자 수, 기본값: 무제한): ").strip()
+                max_length = input("   최대 Transcript 길이 (문자 수, 기본값: 무제한, x로 취소/메인 메뉴로 돌아가기): ").strip()
+                
+                if max_length and max_length.lower() in ['x', 'cancel']:
+                    print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                    return None, None
                 
                 if min_length or max_length:
                     # 간단한 방법: content 또는 transcript 필드로 필터링
@@ -255,25 +286,29 @@ def build_filters(analyzer=None):
                         post_filters['max_transcript_length'] = int(max_length)
                     print(f"   ✅ Transcript 길이 필터 적용 (파싱 후): {min_length or 0} ~ {max_length or '무제한'}자")
         except (ValueError, EOFError, KeyboardInterrupt):
-            pass
+            print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+            return None, None
     
     # 5. 참여자 수 필터 (파싱 후 필터링)
     if '5' in choice_list:
         try:
-            min_participants = input("\n👥 최소 참여자 수 (기본값: 0, x로 취소): ").strip()
+            min_participants = input("\n👥 최소 참여자 수 (기본값: 0, x로 취소/메인 메뉴로 돌아가기): ").strip()
             if min_participants and min_participants.lower() in ['x', 'cancel']:
-                print("   ⏪ 참여자 수 필터 선택을 취소했습니다.")
+                print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                return None, None
             else:
-                max_participants = input("   최대 참여자 수 (기본값: 무제한, x로 취소): ").strip()
+                max_participants = input("   최대 참여자 수 (기본값: 무제한, x로 취소/메인 메뉴로 돌아가기): ").strip()
                 
                 if max_participants and max_participants.lower() in ['x', 'cancel']:
-                    print("   ⏪ 참여자 수 필터 선택을 취소했습니다.")
+                    print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+                    return None, None
                 elif min_participants or max_participants:
                     post_filters['min_participants'] = int(min_participants) if min_participants else 0
                     post_filters['max_participants'] = int(max_participants) if max_participants else None
                     print(f"   ✅ 참여자 수 필터 적용 (파싱 후): {min_participants or 0} ~ {max_participants or '무제한'}명")
         except (ValueError, EOFError, KeyboardInterrupt):
-            pass
+            print("\n⏪ 필터 선택을 취소하고 메인 메뉴로 돌아갑니다.")
+            return None, None
     
     return filters, post_filters
 

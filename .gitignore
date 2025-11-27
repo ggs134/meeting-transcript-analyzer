@@ -25,6 +25,7 @@ analysis_*.md
 aggregated_analysis_*.md
 original_meetings_*.json
 parsed_results_*.json
+parsed_transcripts_*.json
 parsing_failed.json
 output/
 

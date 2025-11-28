@@ -366,7 +366,7 @@ class MeetingPerformanceAnalyzer:
         
         return sorted(list(participants))
         
-    def fetch_meeting_records(self, filters: Dict[str, Any] = None) -> List[Dict]:
+    def fetch_meeting_records(self, filters: Dict[str, Any] = None, limit: int = 0, sort: List[tuple] = None) -> List[Dict]:
         """
         MongoDB에서 회의 transcript 데이터 가져오기
         Google Drive 스키마 형식도 자동으로 처리
@@ -374,6 +374,8 @@ class MeetingPerformanceAnalyzer:
         Args:
             filters: MongoDB 쿼리 필터 (예: {'date': {'$gte': start_date}})
                      'date' 필터는 자동으로 'createdTime' 필드에도 적용됨
+            limit: 가져올 문서 최대 개수 (0이면 제한 없음)
+            sort: 정렬 기준 (예: [('date', -1)])
             
         Returns:
             회의 transcript 문서 리스트 (정규화됨)
@@ -444,7 +446,15 @@ class MeetingPerformanceAnalyzer:
                 else:
                     mongo_filters = date_or_filter
         
-        meetings = list(self.collection.find(mongo_filters))
+        cursor = self.collection.find(mongo_filters)
+        
+        if sort:
+            cursor = cursor.sort(sort)
+            
+        if limit > 0:
+            cursor = cursor.limit(limit)
+            
+        meetings = list(cursor)
         
         # 각 문서를 정규화 (Google Drive 스키마인 경우 변환)
         normalized_meetings = [self._normalize_document(meeting) for meeting in meetings]
@@ -809,9 +819,59 @@ class MeetingPerformanceAnalyzer:
         Returns:
             분석 결과 딕셔너리 또는 None (분석 실패 시)
         """
-        # ... (기존 코드와 동일)
-        # 이 메서드는 analyze_meetings에서 호출됨
-        pass  # 실제 구현은 analyze_meetings 내부에 있음 (여기서는 생략)
+        print(f"\n{'='*60}")
+        print(f"📋 회의 {idx}/{total} 분석 중: {meeting.get('title', 'N/A')}")
+        print(f"{'='*60}")
+        
+        # Transcript 가져오기
+        transcript = meeting.get('transcript', '')
+        
+        if not transcript:
+            print("⚠️  Transcript가 없습니다. 다음 회의로 넘어갑니다.")
+            return None
+        
+        # Transcript 파싱
+        print("📝 Transcript 파싱 중...")
+        parsed_transcript = self.parse_transcript(transcript)
+        
+        if not parsed_transcript:
+            print("⚠️  Transcript 파싱 실패. 형식을 확인해주세요.")
+            return None
+        
+        print(f"✓ {len(parsed_transcript)}개의 발언을 파싱했습니다.")
+        
+        # 참여자별 통계 추출
+        stats = self.extract_participant_stats(parsed_transcript)
+        participants = list(stats.keys())
+        
+        print(f"✓ 참여자 {len(participants)}명: {', '.join(participants)}")
+        
+        # 분석용 텍스트 포맷팅
+        formatted_text = self.format_transcript_for_analysis(meeting, parsed_transcript, stats)
+        
+        # 성과 분석
+        analysis_result = self.analyze_participant_performance(
+            formatted_text, 
+            stats,
+            template_override,
+            custom_instructions
+        )
+        
+        # total_statements를 analysis_result에 추가
+        analysis_result['total_statements'] = len(parsed_transcript)
+        
+        # 결과 저장
+        # analysis_result에 이미 template_used, template_version, model_used, participant_stats, total_statements가 포함되어 있으므로 중복 저장하지 않음
+        result = {
+            "meeting_id": str(meeting.get('_id', '')),
+            "meeting_title": meeting.get('title', 'N/A'),
+            "meeting_date": meeting.get('date', 'N/A'),
+            "participants": participants,  # 참여자 목록은 최상위에 유지 (편의성)
+            "analysis": analysis_result
+        }
+        
+        print("✅ 분석 완료!")
+        return result
 
     def analyze_aggregated_meetings(self, meetings: List[Dict], template_name: str = "comprehensive_review", 
                                    custom_instructions: str = "",
@@ -910,62 +970,7 @@ class MeetingPerformanceAnalyzer:
                 "status": "error",
                 "error": str(e)
             }
-        finally:
-            # 프롬프트 설정 복구
             self.prompt_config.default_template = original_template
-        print(f"\n{'='*60}")
-        print(f"📋 회의 {idx}/{total} 분석 중: {meeting.get('title', 'N/A')}")
-        print(f"{'='*60}")
-        
-        # Transcript 가져오기
-        transcript = meeting.get('transcript', '')
-        
-        if not transcript:
-            print("⚠️  Transcript가 없습니다. 다음 회의로 넘어갑니다.")
-            return None
-        
-        # Transcript 파싱
-        print("📝 Transcript 파싱 중...")
-        parsed_transcript = self.parse_transcript(transcript)
-        
-        if not parsed_transcript:
-            print("⚠️  Transcript 파싱 실패. 형식을 확인해주세요.")
-            return None
-        
-        print(f"✓ {len(parsed_transcript)}개의 발언을 파싱했습니다.")
-        
-        # 참여자별 통계 추출
-        stats = self.extract_participant_stats(parsed_transcript)
-        participants = list(stats.keys())
-        
-        print(f"✓ 참여자 {len(participants)}명: {', '.join(participants)}")
-        
-        # 분석용 텍스트 포맷팅
-        formatted_text = self.format_transcript_for_analysis(meeting, parsed_transcript, stats)
-        
-        # 성과 분석
-        analysis_result = self.analyze_participant_performance(
-            formatted_text, 
-            stats,
-            template_override,
-            custom_instructions
-        )
-        
-        # total_statements를 analysis_result에 추가
-        analysis_result['total_statements'] = len(parsed_transcript)
-        
-        # 결과 저장
-        # analysis_result에 이미 template_used, template_version, model_used, participant_stats, total_statements가 포함되어 있으므로 중복 저장하지 않음
-        result = {
-            "meeting_id": str(meeting.get('_id', '')),
-            "meeting_title": meeting.get('title', 'N/A'),
-            "meeting_date": meeting.get('date', 'N/A'),
-            "participants": participants,  # 참여자 목록은 최상위에 유지 (편의성)
-            "analysis": analysis_result
-        }
-        
-        print("✅ 분석 완료!")
-        return result
     
     def analyze_multiple_meetings(self, filters: Dict[str, Any] = None,
                                  template_override: str = None,

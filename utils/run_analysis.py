@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from datetime import datetime
 from dotenv import load_dotenv
 from meeting_performance_analyzer import MeetingPerformanceAnalyzer
+from prompt_templates import PromptTemplates
 
 # .env 파일에서 환경 변수 로드 (상위 디렉토리)
 env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
@@ -145,9 +146,23 @@ def build_analyzer(template_name: str = "default", template_version: str = "late
     )
     return analyzer
 
+def get_latest_latest_analyzed():
+    #get latest analyzed meeting from mongodb, gemini.recordings collection
+    analyzer = build_analyzer("default")
+    db = analyzer.client["gemini"]
+    collection = db["recordings"]
+    
+    # meeting_date 기준 내림차순 정렬하여 1개 가져오기
+    latest_analyzed = collection.find_one(sort=[("meeting_date", -1)])
+    
+    return latest_analyzed
+
 def main():
     # template_keys = ["default", "team_collaboration", "action_items", "knowledge_base", "decision_log"]
-    template_keys = ["team_collaboration", "action_items", "knowledge_base", "decision_log", "quick_recap", "meeting_context", "performance_ranking"]
+    # template_keys = ["team_collaboration", "action_items", "knowledge_base", "decision_log", "quick_recap", "meeting_context", "performance_ranking"]
+    template_keys = ["default", "team_collaboration", "action_items", "knowledge_base", "decision_log", "quick_recap", "meeting_context"]
+    # template_keys = ["team_collaboration", "action_items", "knowledge_base", "decision_log", "quick_recap", "meeting_context"]
+    # template_keys = list(PromptTemplates.list_templates().keys())
     #my_summary is missing
 
     template_analyzers = {}
@@ -157,20 +172,60 @@ def main():
 
     #all types of analyzer
     # default_analyzer = template_analyzers["default"]
+    default_analyzer = build_analyzer("default")
     
-    #get all meetings
-    query = {}
+    # Date range for filtering
+    # start_datetime = datetime(2025, 11, 22)
+    # end_datetime = datetime(2025, 11, 30)
+    now = datetime.now()
+
+
+    # Query to fetch the latest meeting
+    # latest_one_query = {}
+    # latest_one_meeting = default_analyzer.fetch_meeting_records(latest_one_query, limit=1, sort=[('date', -1)])
+
+    # Query to fetch meetings within the date range
+    latest_analyzed = get_latest_latest_analyzed()
+    
+    if latest_analyzed:
+        meeting_date = latest_analyzed.get("meeting_date")
+        # Convert to datetime if it's a string
+        if isinstance(meeting_date, str):
+            from dateutil import parser
+            meeting_date = parser.parse(meeting_date)
+    else:
+        # If no analyzed meetings exist, use a very old date
+        meeting_date = datetime(2000, 1, 1)
+    
+    query = {
+        "date": {
+            "$gt": meeting_date,
+            "$lte": now
+        }
+    }
     # meetings = default_analyzer.fetch_meeting_records(query)
 
-    for template_key, analyzer in template_analyzers.items():
-        meetings = analyzer.fetch_meeting_records(query)
-        analyzed_list = analyzer.analyze_meetings(meetings)
-        print(analyzed_list)
-        # analyzer.save_analysis_to_mongodb(
-        #     analyzed_list,
-        #     output_collection_name="recordings",
-        #     output_database_name="gemini"
-        # )
+    meetings = default_analyzer.fetch_meeting_records(query)
+    # print(len(meetings))
+
+    for template_key, analyzer in template_analyzers.items(): #템플릿의 종류 선택
+        
+        print("{} 을 사용한 분석결과".format(template_key))
+
+        meetings = analyzer.fetch_meeting_records(query) #일정 조건(날짜)에 따른 회의록 조회
+        #분석할 회의수
+        print("분석할 회의수: {}".format(len(meetings)))
+        
+        analyzed_list = analyzer.analyze_meetings(meetings) #분석
+        # print(analyzed_list)
+        # print(meetings)
+        analyzer.save_analysis_to_mongodb(
+            analyzed_list,
+            output_collection_name="recordings",
+            output_database_name="gemini"
+        )
+
+    
 
     # default_analyzer = template_analyzers["default"]
     

@@ -83,10 +83,11 @@ def build_filters(analyzer=None):
         print("   c. 이번 주")
         print("   d. 이번 달")
         print("   e. 올해")
+        print("   f. 특정 날짜 (하루)")
         print("   x. 취소 (메인 메뉴로 돌아가기)")
         
         try:
-            date_choice = input("   선택 (a/b/c/d/e/x): ").strip().lower()
+            date_choice = input("   선택 (a/b/c/d/e/f/x): ").strip().lower()
         except (EOFError, KeyboardInterrupt):
             date_choice = "x"
         
@@ -138,6 +139,23 @@ def build_filters(analyzer=None):
                 year_start = datetime(today.year, 1, 1)
                 filters['date'] = {'$gte': year_start}
                 print(f"   ✅ 올해 필터 적용")
+            
+            elif date_choice == 'f':  # 특정 날짜 (하루)
+                try:
+                    date_str = input("   날짜 (YYYY-MM-DD): ").strip()
+                    if date_str:
+                        target_date = datetime.strptime(date_str, '%Y-%m-%d')
+                        # 해당 날짜의 00:00:00 ~ 23:59:59
+                        start_date = datetime(target_date.year, target_date.month, target_date.day, 0, 0, 0)
+                        end_date = datetime(target_date.year, target_date.month, target_date.day, 23, 59, 59)
+                        
+                        filters['date'] = {
+                            '$gte': start_date,
+                            '$lte': end_date
+                        }
+                        print(f"   ✅ 특정 날짜 필터 적용: {date_str}")
+                except (ValueError, EOFError, KeyboardInterrupt) as e:
+                    print(f"   ⚠️  날짜 형식 오류: {e}")
     
     # 2. 제목 키워드 필터
     if '2' in choice_list:
@@ -603,7 +621,7 @@ def _interactive_analysis(analyzer, parsed_result, skip_mode_selection=False):
         all_templates = PromptTemplates.list_templates()
         
         # 분석 모드에 따른 템플릿 필터링
-        aggregated_templates = ['comprehensive_review', 'project_milestone', 'soft_skills_growth', 'my_summary', 'performance_ranking']
+        aggregated_templates = ['comprehensive_review', 'project_milestone', 'soft_skills_growth', 'my_summary', 'performance_ranking', 'daily_report']
         
         if mode == "1": # 개별 분석
             # 종합 분석용 템플릿 제외
@@ -863,6 +881,7 @@ def _interactive_analysis(analyzer, parsed_result, skip_mode_selection=False):
                             print(f"✅ 파일 저장 완료: {filename}")
                         except Exception as e:
                             print(f"❌ 파일 저장 실패: {e}")
+
                 else:
                     error_msg = result.get('error') if result else "Unknown error"
                     print(f"❌ 종합 분석 실패: {error_msg}")

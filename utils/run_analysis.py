@@ -209,14 +209,18 @@ def main():
     # print(len(meetings))
 
     for template_key, analyzer in template_analyzers.items(): #템플릿의 종류 선택
-        
-        print("{} 을 사용한 분석결과".format(template_key))
-
-        meetings = analyzer.fetch_meeting_records(query) #일정 조건(날짜)에 따른 회의록 조회
-        #분석할 회의수
-        print("분석할 회의수: {}".format(len(meetings)))
-        
-        analyzed_list = analyzer.analyze_meetings(meetings) #분석
+        if template_key == "daily_report":
+            # daily_report는 종합 분석 사용
+            result = analyzer.analyze_aggregated_meetings(meetings, template_name="daily_report")
+            if result:
+                # meeting_date 필드 추가 (최신 회의 날짜 기준) - get_latest_latest_analyzed 호환성 위함
+                if 'date_range' in result and 'end' in result['date_range']:
+                    result['meeting_date'] = result['date_range']['end']
+                analyzed_list = [result]
+            else:
+                analyzed_list = []
+        else:
+            analyzed_list = analyzer.analyze_meetings(meetings) #분석
         # print(analyzed_list)
         # print(meetings)
         analyzer.save_analysis_to_mongodb(

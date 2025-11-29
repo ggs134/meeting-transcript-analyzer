@@ -897,6 +897,7 @@ class MeetingPerformanceAnalyzer:
         # 1. 텍스트 합치기
         aggregated_transcript = ""
         all_participants = set()
+        global_stats = defaultdict(lambda: {"speak_count": 0, "total_words": 0})
         
         # 날짜순 정렬
         sorted_meetings = sorted(meetings, key=lambda x: x.get('date', datetime.min))
@@ -916,12 +917,31 @@ class MeetingPerformanceAnalyzer:
                 # transcript에서 추출 시도
                 extracted = self._extract_participants_from_transcript(transcript)
                 all_participants.update(extracted)
+            
+            # 통계 계산을 위해 파싱
+            parsed_transcript = self.parse_transcript(transcript)
+            meeting_stats = self.extract_participant_stats(parsed_transcript)
+            
+            for speaker, stats in meeting_stats.items():
+                global_stats[speaker]["speak_count"] += stats["speak_count"]
+                global_stats[speaker]["total_words"] += stats["total_words"]
                 
             aggregated_transcript += f"\n\n=== Meeting: {title} ({date}) ===\n\n"
             aggregated_transcript += transcript
             
         # 2. 프롬프트 생성
-        participants_list = sorted(list(all_participants))
+        # 참여자별 통계 정보를 포함한 리스트 생성
+        participants_list = []
+        total_words_all = sum(s["total_words"] for s in global_stats.values())
+        
+        sorted_participants = sorted(list(all_participants))
+        for p in sorted_participants:
+            stats = global_stats.get(p, {"speak_count": 0, "total_words": 0})
+            words = stats["total_words"]
+            ratio = (words / total_words_all * 100) if total_words_all > 0 else 0
+            
+            p_info = f"{p} (발언: {stats['speak_count']}회, 단어: {words}개, 비율: {ratio:.1f}%)"
+            participants_list.append(p_info)
         
         # 템플릿 버전 확인
         if version:

@@ -189,6 +189,7 @@ def main():
     
     if latest_analyzed:
         meeting_date = latest_analyzed.get("meeting_date")
+        print("latest_analyzed: meeting date ->", meeting_date)
         # Convert to datetime if it's a string
         if isinstance(meeting_date, str):
             from dateutil import parser
@@ -206,21 +207,13 @@ def main():
     # meetings = default_analyzer.fetch_meeting_records(query)
 
     meetings = default_analyzer.fetch_meeting_records(query)
+    # print(meetings)
+    print("number of target meetings: ", len(meetings))
     # print(len(meetings))
+    # return meetings
 
     for template_key, analyzer in template_analyzers.items(): #템플릿의 종류 선택
-        if template_key == "daily_report":
-            # daily_report는 종합 분석 사용
-            result = analyzer.analyze_aggregated_meetings(meetings, template_name="daily_report")
-            if result:
-                # meeting_date 필드 추가 (최신 회의 날짜 기준) - get_latest_latest_analyzed 호환성 위함
-                if 'date_range' in result and 'end' in result['date_range']:
-                    result['meeting_date'] = result['date_range']['end']
-                analyzed_list = [result]
-            else:
-                analyzed_list = []
-        else:
-            analyzed_list = analyzer.analyze_meetings(meetings) #분석
+        analyzed_list = analyzer.analyze_meetings(meetings) #분석
         # print(analyzed_list)
         # print(meetings)
         analyzer.save_analysis_to_mongodb(
@@ -258,4 +251,4 @@ def main():
 
 if __name__ == "__main__":
     # results = main()
-    main()
+    meetings =main()

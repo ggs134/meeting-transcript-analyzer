@@ -345,6 +345,330 @@ class MeetingPerformanceAnalyzer:
         
         return normalized
     
+    def _parse_daily_report_analysis(self, analysis_text: str, participants: List[str]) -> Dict[str, Any]:
+        """
+        daily_report 분석 텍스트를 구조화된 데이터로 파싱
+        
+        Args:
+            analysis_text: 마크다운 형식의 분석 텍스트
+            participants: 참여자 이름 리스트
+            
+        Returns:
+            구조화된 분석 데이터 딕셔너리
+        """
+        import re
+        
+        result = {
+            "summary": {},
+            "participants": []
+        }
+        
+        # 1. 하루의 회의 내용 요약 파싱
+        summary_text = None
+        # "## 하루의 회의 내용 요약" 또는 "## YYYY년 MM월 DD일 일간 업무 보고서" 형식 모두 지원
+        # 첫 번째 ## 섹션을 찾되, 참여자 섹션(## 참여자명) 전까지의 내용을 가져옴
+        summary_match = None
+        
+        # 먼저 "하루의 회의 내용 요약" 형식 시도
+        # 참여자 섹션(## 참여자명) 또는 종합 비교(## 종합 비교) 전까지의 내용을 가져옴
+        summary_match = re.search(r'## 하루의 회의 내용 요약\s*\n(.*?)(?=\n## [A-Z가-힣]|\n## 종합 비교|\Z)', analysis_text, re.DOTALL)
+        
+        # 없으면 날짜 형식 시도 (## YYYY년 MM월 DD일 일간 업무 보고서)
+        if not summary_match:
+            summary_match = re.search(r'## \d{4}년 \d{1,2}월 \d{1,2}일 일간 업무 보고서\s*\n(.*?)(?=\n## [A-Z가-힣]|\n## 종합 비교|\Z)', analysis_text, re.DOTALL)
+        
+        # 그래도 없으면 첫 번째 ## 섹션 전체를 가져옴
+        # "전체 회의 개요"가 포함된 첫 번째 ## 섹션을 요약 섹션으로 간주
+        if not summary_match:
+            # 첫 번째 ## 섹션 찾기 (두 번째 ## 섹션 전까지)
+            # 두 번째 ## 섹션은 참여자명(## NAME)이거나 종합 비교일 수 있음
+            first_section_match = re.search(r'## [^\n]+\s*\n(.*?)(?=\n## [A-Z가-힣]|\n## 종합 비교|\Z)', analysis_text, re.DOTALL)
+            if first_section_match:
+                # "전체 회의 개요" 또는 "주제별 회의 내용 분류"가 포함되어 있으면 요약 섹션으로 간주
+                section_content = first_section_match.group(0)
+                if '전체 회의 개요' in section_content or '주제별 회의 내용 분류' in section_content:
+                    summary_match = first_section_match
+        
+        if summary_match:
+            summary_text = summary_match.group(1)
+        else:
+            # 파싱 실패 시 첫 번째 줄만 확인하여 디버깅
+            first_lines = analysis_text.split('\n')[:5]
+            print(f"⚠️  요약 섹션 파싱 실패. 첫 5줄: {first_lines}")
+        
+        if summary_text:
+            # 전체 회의 개요
+            overview_match = re.search(r'### 전체 회의 개요\s*\n(.*?)(?=\n### |\Z)', summary_text, re.DOTALL)
+            if overview_match:
+                overview_text = overview_match.group(1)
+                result["summary"]["overview"] = {
+                    "meeting_count": self._extract_value(overview_text, r'총 회의 수:\s*(\d+)'),
+                    "total_time": self._extract_value(overview_text, r'총 회의 시간:\s*([^\n]+)'),
+                    "main_topics": self._extract_list(overview_text, r'주요 논의 주제:\s*([^\n]+)')
+                }
+            
+            # 주제별 회의 내용 분류 파싱
+            topics_section_match = re.search(r'### 주제별 회의 내용 분류\s*\n(.*?)(?=\n### 핵심 결정사항|\n### 주요 성과|\n### 공통 이슈|\Z)', summary_text, re.DOTALL)
+            if topics_section_match:
+                topics_text = topics_section_match.group(1)
+                # 각 주제별 섹션 파싱 (#### [주제명] 또는 #### 주제명 형식 모두 지원)
+                # 먼저 대괄호가 있는 형식 시도
+                topic_pattern = r'####\s*(?:\[([^\]]+)\]|([^\n]+))\s*\n(.*?)(?=\n####|\Z)'
+                topic_matches = re.finditer(topic_pattern, topics_text, re.DOTALL)
+                
+                topics_list = []
+                for topic_match in topic_matches:
+                    # 대괄호가 있으면 group(1), 없으면 group(2) 사용
+                    topic_name = topic_match.group(1) if topic_match.group(1) else topic_match.group(2)
+                    topic_content = topic_match.group(3)
+                    if topic_name:
+                        topic_name = topic_name.strip()
+                    
+                    topic_data = {
+                        "topic": topic_name,
+                        "related_meetings": [],
+                        "key_discussions": [],
+                        "key_decisions": [],
+                        "progress": [],
+                        "issues": []
+                    }
+                    
+                    # 관련 회의 추출
+                    meetings_match = re.search(r'\*\*관련 회의\*\*:\s*([^\n]+)', topic_content)
+                    if meetings_match:
+                        meetings_str = meetings_match.group(1)
+                        topic_data["related_meetings"] = [m.strip() for m in meetings_str.split(',')]
+                    
+                    # 주요 논의 내용 추출
+                    discussions_match = re.search(r'\*\*주요 논의 내용\*\*:\s*\n(.*?)(?=\n\*\*|\Z)', topic_content, re.DOTALL)
+                    if discussions_match:
+                        discussions_text = discussions_match.group(1)
+                        topic_data["key_discussions"] = self._extract_bullet_list(discussions_text)
+                    
+                    # 핵심 결정사항 추출
+                    decisions_match = re.search(r'\*\*핵심 결정사항\*\*:\s*\n(.*?)(?=\n\*\*|\Z)', topic_content, re.DOTALL)
+                    if decisions_match:
+                        decisions_text = decisions_match.group(1)
+                        topic_data["key_decisions"] = self._extract_bullet_list(decisions_text)
+                    
+                    # 진전 사항 추출
+                    progress_match = re.search(r'\*\*진전 사항\*\*:\s*\n(.*?)(?=\n\*\*|\Z)', topic_content, re.DOTALL)
+                    if progress_match:
+                        progress_text = progress_match.group(1)
+                        topic_data["progress"] = self._extract_bullet_list(progress_text)
+                    
+                    # 이슈 및 블로커 추출
+                    issues_match = re.search(r'\*\*이슈 및 블로커\*\*:\s*\n(.*?)(?=\n\*\*|\Z)', topic_content, re.DOTALL)
+                    if issues_match:
+                        issues_text = issues_match.group(1)
+                        topic_data["issues"] = self._extract_bullet_list(issues_text)
+                    
+                    topics_list.append(topic_data)
+                
+                result["summary"]["topics"] = topics_list
+            
+            # 핵심 결정사항 (전체 요약)
+            decisions_match = re.search(r'### 핵심 결정사항 \(전체 요약\)\s*\n(.*?)(?=\n### |\Z)', summary_text, re.DOTALL)
+            if not decisions_match:
+                # 하위 호환성을 위해 괄호 없는 버전도 시도
+                decisions_match = re.search(r'### 핵심 결정사항\s*\n(.*?)(?=\n### |\Z)', summary_text, re.DOTALL)
+            if decisions_match:
+                decisions_text = decisions_match.group(1)
+                result["summary"]["key_decisions"] = self._extract_bullet_list(decisions_text)
+            
+            # 주요 성과 및 진전 (전체 요약)
+            achievements_match = re.search(r'### 주요 성과 및 진전 \(전체 요약\)\s*\n(.*?)(?=\n### |\Z)', summary_text, re.DOTALL)
+            if not achievements_match:
+                # 하위 호환성을 위해 괄호 없는 버전도 시도
+                achievements_match = re.search(r'### 주요 성과 및 진전\s*\n(.*?)(?=\n### |\Z)', summary_text, re.DOTALL)
+            if achievements_match:
+                achievements_text = achievements_match.group(1)
+                result["summary"]["major_achievements"] = self._extract_bullet_list(achievements_text)
+            
+            # 공통 이슈 및 블로커 (전체 요약)
+            issues_match = re.search(r'### 공통 이슈 및 블로커 \(전체 요약\)\s*\n(.*?)(?=\n### |\Z)', summary_text, re.DOTALL)
+            if not issues_match:
+                # 하위 호환성을 위해 괄호 없는 버전도 시도
+                issues_match = re.search(r'### 공통 이슈 및 블로커\s*\n(.*?)(?=\n### |\Z)', summary_text, re.DOTALL)
+            if issues_match:
+                issues_text = issues_match.group(1)
+                result["summary"]["common_issues"] = self._extract_bullet_list(issues_text)
+        
+        # 2. 각 참여자별 분석 파싱
+        for participant in participants:
+            # 참여자 섹션 찾기 (## 참여자명 형식)
+            participant_pattern = rf'##\s+{re.escape(participant)}\s*\n(.*?)(?=\n##\s+[^#]|\n#\s+종합 비교|\Z)'
+            participant_match = re.search(participant_pattern, analysis_text, re.DOTALL)
+            
+            if participant_match:
+                participant_text = participant_match.group(1)
+                participant_analysis = {
+                    "name": participant,
+                    "speaking_time": None,
+                    "speaking_percentage": None,
+                    "key_activities": [],
+                    "progress": [],
+                    "issues": [],
+                    "action_items": [],
+                    "collaboration": []
+                }
+                
+                # 개인별 발언 시간
+                speaking_time_match = re.search(r'### 개인별 발언 시간\s*\n-?\s*([^\n]+)', participant_text)
+                if speaking_time_match:
+                    time_text = speaking_time_match.group(1)
+                    time_match = re.search(r'(\d+:\d+:\d+)\s*\(전체의\s*([\d.]+)%\)', time_text)
+                    if time_match:
+                        participant_analysis["speaking_time"] = time_match.group(1)
+                        participant_analysis["speaking_percentage"] = float(time_match.group(2))
+                
+                # 오늘의 주요 활동
+                activities_match = re.search(r'### 오늘의 주요 활동\s*\n(.*?)(?=\n### |\Z)', participant_text, re.DOTALL)
+                if activities_match:
+                    activities_text = activities_match.group(1)
+                    participant_analysis["key_activities"] = self._extract_bullet_list(activities_text)
+                
+                # 진행 상황 및 성과
+                progress_match = re.search(r'### 진행 상황 및 성과\s*\n(.*?)(?=\n### |\Z)', participant_text, re.DOTALL)
+                if progress_match:
+                    progress_text = progress_match.group(1)
+                    participant_analysis["progress"] = self._extract_bullet_list(progress_text)
+                
+                # 이슈 및 블로커
+                issues_match = re.search(r'### 이슈 및 블로커\s*\n(.*?)(?=\n### |\Z)', participant_text, re.DOTALL)
+                if issues_match:
+                    issues_text = issues_match.group(1)
+                    participant_analysis["issues"] = self._extract_bullet_list(issues_text)
+                
+                # 다음 액션 아이템
+                action_items_match = re.search(r'### 다음 액션 아이템\s*\n(.*?)(?=\n### |\Z)', participant_text, re.DOTALL)
+                if action_items_match:
+                    action_items_text = action_items_match.group(1)
+                    participant_analysis["action_items"] = self._extract_checkbox_list(action_items_text)
+                
+                # 협업 현황
+                collaboration_match = re.search(r'### 협업 현황\s*\n(.*?)(?=\n### |\Z)', participant_text, re.DOTALL)
+                if collaboration_match:
+                    collaboration_text = collaboration_match.group(1)
+                    participant_analysis["collaboration"] = self._extract_bullet_list(collaboration_text)
+                
+                result["participants"].append(participant_analysis)
+        
+        return result
+    
+    def _parse_daily_report_json(self, analysis_text: str, participants: List[str]) -> Dict[str, Any]:
+        """
+        daily_report JSON 형식 분석 텍스트를 구조화된 데이터로 파싱
+        
+        Args:
+            analysis_text: JSON 형식의 분석 텍스트
+            participants: 참여자 이름 리스트
+            
+        Returns:
+            구조화된 분석 데이터 딕셔너리
+        """
+        import json
+        import re
+        
+        # JSON 추출 시도 (마크다운 코드 블록이나 다른 텍스트가 있을 수 있음)
+        json_text = analysis_text.strip()
+        
+        # 코드 블록 제거 (```json ... ``` 또는 ``` ... ```)
+        json_text = re.sub(r'```(?:json)?\s*\n?(.*?)\n?```', r'\1', json_text, flags=re.DOTALL)
+        
+        # JSON 객체 찾기 (중괄호로 시작하고 끝나는 부분)
+        json_match = re.search(r'\{.*\}', json_text, re.DOTALL)
+        if json_match:
+            json_text = json_match.group(0)
+        
+        try:
+            # JSON 파싱
+            parsed_data = json.loads(json_text)
+            
+            # 스키마 검증 및 정규화
+            result = {
+                "summary": {},
+                "participants": []
+            }
+            
+            # summary 파싱
+            if "summary" in parsed_data:
+                summary = parsed_data["summary"]
+                result["summary"] = {
+                    "overview": summary.get("overview", {}),
+                    "topics": summary.get("topics", []),
+                    "key_decisions": summary.get("key_decisions", []),
+                    "major_achievements": summary.get("major_achievements", []),
+                    "common_issues": summary.get("common_issues", [])
+                }
+            
+            # participants 파싱 (participants_analysis도 지원 - 하위 호환성)
+            if "participants" in parsed_data:
+                result["participants"] = parsed_data["participants"]
+            elif "participants_analysis" in parsed_data:
+                # 하위 호환성: participants_analysis도 지원
+                result["participants"] = parsed_data["participants_analysis"]
+            else:
+                # participants가 없으면 빈 리스트 반환
+                result["participants"] = []
+            
+            # 빈 구조인지 확인 (실제 데이터가 있는지 체크)
+            has_data = (
+                (result.get('summary', {}) and 
+                 (result['summary'].get('overview', {}) or 
+                  (result['summary'].get('topics') and len(result['summary']['topics']) > 0) or
+                  (result['summary'].get('key_decisions') and len(result['summary']['key_decisions']) > 0) or
+                  (result['summary'].get('major_achievements') and len(result['summary']['major_achievements']) > 0) or
+                  (result['summary'].get('common_issues') and len(result['summary']['common_issues']) > 0))) or
+                (result.get('participants') and len(result['participants']) > 0)
+            )
+            
+            # 실제 데이터가 있으면 반환, 없으면 None 반환 (원본 텍스트 유지)
+            if has_data:
+                return result
+            else:
+                print(f"⚠️  JSON 파싱은 성공했지만 빈 구조입니다. 원본 텍스트를 유지합니다.")
+                return None
+            
+        except json.JSONDecodeError as e:
+            print(f"⚠️  JSON 파싱 실패: {str(e)}")
+            print(f"   원본 텍스트 (처음 500자): {analysis_text[:500]}")
+            # JSON 파싱 실패 시 None 반환 (원본 텍스트 유지)
+            return None
+    
+    def _extract_value(self, text: str, pattern: str) -> Optional[str]:
+        """정규식으로 값 추출"""
+        match = re.search(pattern, text)
+        return match.group(1) if match else None
+    
+    def _extract_list(self, text: str, pattern: str) -> List[str]:
+        """정규식으로 리스트 추출 (쉼표로 구분)"""
+        match = re.search(pattern, text)
+        if match:
+            items = [item.strip() for item in match.group(1).split(',')]
+            return items
+        return []
+    
+    def _extract_bullet_list(self, text: str) -> List[str]:
+        """마크다운 불릿 리스트 추출"""
+        items = []
+        for line in text.split('\n'):
+            line = line.strip()
+            if line.startswith('- '):
+                items.append(line[2:].strip())
+            elif line.startswith('* '):
+                items.append(line[2:].strip())
+        return items
+    
+    def _extract_checkbox_list(self, text: str) -> List[str]:
+        """마크다운 체크박스 리스트 추출"""
+        items = []
+        for line in text.split('\n'):
+            line = line.strip()
+            if line.startswith('- [ ]') or line.startswith('- [x]'):
+                items.append(line[5:].strip())
+        return items
+    
     def _extract_participants_from_transcript(self, transcript: str) -> List[str]:
         """
         Transcript에서 참여자 자동 추출
@@ -930,8 +1254,10 @@ class MeetingPerformanceAnalyzer:
             aggregated_transcript += transcript
             
         # 2. 프롬프트 생성
-        # 참여자별 통계 정보를 포함한 리스트 생성
+        # 참여자별 통계 정보를 포함한 리스트 생성 (문자열 형식 - 프롬프트용)
         participants_list = []
+        # 참여자별 통계 정보를 객체 배열로 생성 (구조화된 데이터용)
+        participants_data = []
         total_words_all = sum(s["total_words"] for s in global_stats.values())
         
         sorted_participants = sorted(list(all_participants))
@@ -942,10 +1268,22 @@ class MeetingPerformanceAnalyzer:
             
             p_info = f"{p} (발언: {stats['speak_count']}회, 단어: {words}개, 비율: {ratio:.1f}%)"
             participants_list.append(p_info)
+            
+            # 구조화된 참여자 데이터 추가
+            participants_data.append({
+                "name": p,
+                "speak_count": stats["speak_count"],
+                "word_count": words,
+                "percentage": round(ratio, 1)
+            })
         
         # 템플릿 버전 확인
         if version:
-            template_version = version
+            # "latest"인 경우 실제 버전 번호로 변환
+            if version == "latest":
+                template_version = get_template_version(template_name)
+            else:
+                template_version = version
         else:
             template_version = get_template_version(template_name)
         
@@ -953,34 +1291,83 @@ class MeetingPerformanceAnalyzer:
         original_template = self.prompt_config.default_template
         self.prompt_config.default_template = template_name
         
+        # daily_report 등에서 사용할 날짜 정보 추출
+        date_str = None
+        if sorted_meetings:
+            first_date = sorted_meetings[0].get('date')
+            if isinstance(first_date, datetime):
+                date_str = first_date.strftime('%Y-%m-%d')
+            elif isinstance(first_date, str):
+                date_str = first_date
+        
+        # custom_instructions에서 날짜 추출 시도 (예: "분석 대상 날짜: 2024-12-01")
+        if not date_str and custom_instructions:
+            import re
+            date_match = re.search(r'분석 대상 날짜:\s*(\d{4}-\d{2}-\d{2})', custom_instructions)
+            if date_match:
+                date_str = date_match.group(1)
+        
+        # participants_list는 포맷된 문자열 리스트이므로, 순수 참여자 이름 리스트로 변환
+        participants_names = sorted_participants if 'sorted_participants' in locals() else [p.split(' (')[0] for p in participants_list]
+        
+        # custom_instructions에 실제 회의 수 정보 추가 (daily_report 템플릿인 경우)
+        enhanced_custom_instructions = custom_instructions
+        if template_name == "daily_report":
+            meeting_count_info = f"\n\n중요: 실제로 분석된 회의 수는 {len(meetings)}개입니다. '총 회의 수'를 작성할 때는 반드시 이 숫자를 사용하세요."
+            enhanced_custom_instructions = (custom_instructions + meeting_count_info) if custom_instructions else meeting_count_info
+        
         try:
             prompt = self.prompt_config.get_prompt(
                 aggregated_transcript,
-                participants_list,
+                participants_names,  # 순수 참여자 이름 리스트
                 template_name,
                 version,  # 인자로 받은 버전 사용
-                custom_instructions
+                enhanced_custom_instructions,  # 회의 수 정보가 추가된 custom_instructions 사용
+                date=date_str,  # 분석 대상 날짜
+                meetings_data=aggregated_transcript  # 회의록 데이터
             )
             
             # 3. 분석 요청
             print(f"🤖 Gemini API로 종합 분석 중... (템플릿: {template_name})")
             response = self.model.generate_content(prompt)
             
+            # 분석 텍스트 파싱 (daily_report 템플릿인 경우)
+            analysis_text = response.text
+            structured_analysis = None
+            if template_name == "daily_report":
+                # 템플릿 버전 확인: 2.0 이상이면 JSON 형식, 그 이하는 마크다운 형식
+                try:
+                    version_num = float(template_version) if template_version else 0.0
+                    if version_num >= 2.0:
+                        # JSON 형식 파싱
+                        structured_analysis = self._parse_daily_report_json(analysis_text, sorted_participants)
+                    else:
+                        # 마크다운 형식 파싱 (하위 호환성)
+                        structured_analysis = self._parse_daily_report_analysis(analysis_text, sorted_participants)
+                except (ValueError, AttributeError):
+                    # 버전 파싱 실패 시 마크다운 형식으로 시도
+                    structured_analysis = self._parse_daily_report_analysis(analysis_text, sorted_participants)
+            
             result = {
                 "status": "success",
-                "analysis": response.text,
+                "analysis": analysis_text,  # 원본 텍스트 유지 (JSON 또는 마크다운)
                 "meeting_count": len(meetings),
                 "meeting_titles": [m.get('title') for m in sorted_meetings],
                 "date_range": {
                     "start": sorted_meetings[0].get('date'),
                     "end": sorted_meetings[-1].get('date')
                 },
-                "participants": participants_list,
+                "participants": participants_data,  # 구조화된 객체 배열
+                "participants_formatted": participants_list,  # 기존 문자열 형식 (하위 호환성)
                 "template_used": template_name,
                 "template_version": template_version,
                 "model_used": self.model_name,
                 "timestamp": datetime.now().isoformat()
             }
+            
+            # 구조화된 분석 결과가 있으면 추가
+            if structured_analysis:
+                result["structured_analysis"] = structured_analysis
             
             return result
             
@@ -990,6 +1377,8 @@ class MeetingPerformanceAnalyzer:
                 "status": "error",
                 "error": str(e)
             }
+        finally:
+            # 프롬프트 설정 복원
             self.prompt_config.default_template = original_template
     
     def analyze_multiple_meetings(self, filters: Dict[str, Any] = None,

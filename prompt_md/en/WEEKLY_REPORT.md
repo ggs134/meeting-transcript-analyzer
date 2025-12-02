@@ -168,6 +168,11 @@ Output the results in the following JSON format:
    - Exclude personal opinions or speculation
    - Do not describe meeting attendance itself as an achievement
 
+8. **Date and Deadline Specification**:
+   - When mentioning deadlines or dates, calculate the specific date (YYYY-MM-DD format) based on the meeting date
+   - Do not use relative terms like "next week", "tomorrow", or "this weekend"
+   - Example: "by next Monday" → "by 2024-01-22", "this weekend" → "2024-01-20"
+
 # Notes
 - Distinguish between content mentioned in meetings and the person's actual contributions
 - Consolidate duplicate content from multiple meetings into one item

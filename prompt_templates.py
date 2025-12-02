@@ -183,7 +183,9 @@ class PromptTemplates:
                     formatted_text: str, 
                     participants: List[str],
                     custom_instructions: str = "",
-                    version: Optional[str] = None) -> str:
+                    version: Optional[str] = None,
+                    date: Optional[str] = None,
+                    meetings_data: Optional[str] = None) -> str:
         """
         최종 프롬프트 생성
         
@@ -193,18 +195,31 @@ class PromptTemplates:
             participants: 참여자 목록
             custom_instructions: 추가 커스텀 지시사항 (선택)
             version: 템플릿 버전 (None이면 최신 버전)
+            date: 분석 대상 날짜 (선택, daily_report 등에서 사용)
+            meetings_data: 회의록 데이터 (선택, daily_report 등에서 사용)
             
         Returns:
             완성된 프롬프트
         """
         template = cls.get_template(template_name, version)
         
+        # 프롬프트 변수 치환을 위한 기본값 설정
+        # formatted_text를 meetings_data로 사용 (없으면 formatted_text 사용)
+        meetings_data_value = meetings_data if meetings_data is not None else formatted_text
+        participants_value = ', '.join(participants) if isinstance(participants, list) else str(participants)
+        date_value = date if date is not None else "N/A"
+        
+        # 템플릿에 변수 치환 적용
+        template = template.replace('{date}', date_value)
+        template = template.replace('{meetings_data}', meetings_data_value)
+        template = template.replace('{participants}', participants_value)
+        
         prompt = f"""
 다음은 회의 녹취록(transcript)입니다.
 
 {formatted_text}
 
-참여자 목록: {', '.join(participants)}
+참여자 목록: {participants_value}
 
 ---
 
@@ -263,7 +278,9 @@ class PromptConfig:
                    participants: List[str],
                    template_override: str = None,
                    version_override: Optional[str] = None,
-                   custom_instructions: str = "") -> str:
+                   custom_instructions: str = "",
+                   date: Optional[str] = None,
+                   meetings_data: Optional[str] = None) -> str:
         """
         설정에 따라 프롬프트 생성
         
@@ -273,6 +290,8 @@ class PromptConfig:
             template_override: 이번에만 사용할 템플릿 (선택)
             version_override: 이번에만 사용할 버전 (선택, None이면 설정된 버전 또는 최신 버전)
             custom_instructions: 추가 지시사항 (선택)
+            date: 분석 대상 날짜 (선택, daily_report 등에서 사용)
+            meetings_data: 회의록 데이터 (선택, daily_report 등에서 사용)
             
         Returns:
             완성된 프롬프트
@@ -283,7 +302,10 @@ class PromptConfig:
                 "default",  # 더미
                 formatted_text,
                 participants,
-                custom_instructions
+                custom_instructions,
+                None,
+                date,
+                meetings_data
             ).replace(PromptTemplates.get_template("default"), self.custom_template)
         
         # 템플릿 선택
@@ -299,7 +321,9 @@ class PromptConfig:
             formatted_text,
             participants,
             custom_instructions,
-            version
+            version,
+            date,
+            meetings_data
         )
     
     def get_template_info(self) -> Dict:

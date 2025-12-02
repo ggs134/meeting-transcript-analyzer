@@ -11,46 +11,90 @@ Analyze today's meeting transcripts to create a daily report that helps understa
 
 # Analysis Perspective
 The daily report should answer the following questions:
-1. What did each team member do today?
-2. What progress was made?
-3. What issues or blockers were identified?
-4. What needs to be done tomorrow?
+1. What is the overall content of all meetings held today?
+2. What did each team member do today?
+3. What progress was made?
+4. What issues or blockers were identified?
+5. What needs to be done tomorrow?
 
 # Output Format
 
-## {Participant Name}
+**Important: You must respond ONLY in valid JSON format. Do not include markdown or any other text.**
 
-### Individual Speaking Time
-- [Time] ([Percentage]% of total)
+Follow this JSON schema exactly:
 
-### Today's Key Activities
-- [Specific Activity 1]: Brief description
-- [Specific Activity 2]: Brief description
+```json
+{
+  "summary": {
+    "overview": {
+      "meeting_count": 0,
+      "total_time": "",
+      "main_topics": []
+    },
+    "topics": [
+      {
+        "topic": "",
+        "related_meetings": [],
+        "key_discussions": [],
+        "key_decisions": [],
+        "progress": [],
+        "issues": []
+      }
+    ],
+    "key_decisions": [],
+    "major_achievements": [],
+    "common_issues": []
+  },
+  "participants": [
+    {
+      "name": "",
+      "speaking_time": "",
+      "speaking_percentage": 0.0,
+      "key_activities": [],
+      "progress": [],
+      "issues": [],
+      "action_items": [],
+      "collaboration": []
+    }
+  ]
+}
+```
 
-### Progress and Achievements
-- [Completed items or progress made]
+## Field Descriptions
 
-### Issues and Blockers
-- [Identified problems or obstacles]
-- [Required support or decisions needed]
+### summary.overview
+- `meeting_count`: Total number of meetings (integer)
+- `total_time`: Total meeting time (string, e.g., "2 hours 30 minutes")
+- `main_topics`: List of main discussion topics (array of strings)
 
-### Next Action Items
-- [ ] Priority tasks for tomorrow
-- [ ] Items requiring follow-up
+### summary.topics
+For each topic, include the following information:
+- `topic`: Topic name (string)
+- `related_meetings`: List of related meeting titles (array of strings)
+- `key_discussions`: List of key discussion points (array of strings)
+- `key_decisions`: List of key decisions (array of strings)
+- `progress`: List of progress items (array of strings)
+- `issues`: List of issues and blockers (array of strings)
 
-### Collaboration Status
-- [Colleagues worked with]
-- [Requested or provided support]
+### summary.key_decisions
+List of key decisions in the overall summary (array of strings)
 
----
+### summary.major_achievements
+List of major achievements and progress in the overall summary (array of strings)
 
-# Overall Comparison
+### summary.common_issues
+List of common issues and blockers in the overall summary (array of strings)
 
-| Participant | Key Activities | Speaking Time | Action Items |
-|---|---|---|---|
-| [Name] | [Summary of core activities] | [Time] ([Percentage]%) | [Count] |
-
----
+### participants
+Analysis information for each participant:
+- `name`: Participant name (string)
+- `speaking_time`: Speaking time (string, e.g., "00:15:30")
+- `speaking_percentage`: Speaking percentage (float, e.g., 25.5)
+- `key_activities`: List of today's key activities (array of strings)
+- `progress`: List of progress and achievements (array of strings)
+- `issues`: List of issues and blockers (array of strings)
+- `action_items`: List of next action items (array of strings)
+- `collaboration`: List of collaboration status (array of strings)
 
 # Writing Guidelines
 
@@ -80,7 +124,13 @@ The daily report should answer the following questions:
    - Exclude personal opinions or speculation
    - Do not describe meeting attendance itself as an achievement
 
+7. **Date and Deadline Specification**:
+   - When mentioning deadlines or dates, calculate the specific date (YYYY-MM-DD format) based on the meeting date
+   - Do not use relative terms like "next week", "tomorrow", or "this weekend"
+   - Example: "by tomorrow" → "by 2024-01-15", "next Monday" → "2024-01-22"
+
 # Notes
 - Distinguish between content mentioned in meetings and the person's actual contributions
 - Consolidate duplicate content from multiple meetings into one item
 - If information is insufficient, omit the relevant item rather than filling it with speculation
+- **You must return ONLY valid JSON. Do not include any text other than JSON.**

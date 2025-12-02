@@ -978,6 +978,126 @@ class MeetingPerformanceAnalyzer:
         
         return parsed_lines
     
+    def _timestamp_to_seconds(self, timestamp: str) -> int:
+        """
+        타임스탬프 문자열을 초로 변환
+        
+        Args:
+            timestamp: "HH:MM:SS" 또는 "MM:SS" 형식
+            
+        Returns:
+            초 단위 시간
+        """
+        try:
+            parts = timestamp.split(':')
+            if len(parts) == 3:
+                # HH:MM:SS
+                hours, minutes, seconds = map(int, parts)
+                return hours * 3600 + minutes * 60 + seconds
+            elif len(parts) == 2:
+                # MM:SS
+                minutes, seconds = map(int, parts)
+                return minutes * 60 + seconds
+            else:
+                return 0
+        except (ValueError, AttributeError):
+            return 0
+    
+    def _seconds_to_time_string(self, seconds: int) -> str:
+        """
+        초를 HH:MM:SS 형식 문자열로 변환
+        
+        Args:
+            seconds: 초 단위 시간
+            
+        Returns:
+            "HH:MM:SS" 형식 문자열
+        """
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        secs = seconds % 60
+        return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+    
+    def _calculate_speaking_time(self, timestamps: List[str], all_timestamps_sorted: List[tuple] = None) -> int:
+        """
+        타임스탬프 리스트를 기반으로 발언 시간 계산
+        
+        Args:
+            timestamps: 참여자의 발언 타임스탬프 리스트
+            all_timestamps_sorted: 모든 발언의 타임스탬프 리스트 (참여자, 초) 튜플, 시간순 정렬됨
+            
+        Returns:
+            발언 시간 (초)
+        """
+        if not timestamps:
+            return 0
+        
+        # 타임스탬프를 초로 변환하고 정렬
+        timestamp_seconds = sorted([self._timestamp_to_seconds(ts) for ts in timestamps])
+        
+        if not timestamp_seconds:
+            return 0
+        
+        if len(timestamp_seconds) == 1:
+            # 발언이 하나만 있으면 평균 발언 시간(20초) 추정
+            return 20
+        
+        # 모든 타임스탬프가 제공된 경우 정확한 계산
+        if all_timestamps_sorted:
+            total_seconds = 0
+            for i, ts_sec in enumerate(timestamp_seconds):
+                # all_timestamps_sorted에서 현재 타임스탬프의 위치 찾기
+                current_idx = None
+                for idx, (speaker, ts) in enumerate(all_timestamps_sorted):
+                    if ts == ts_sec:
+                        current_idx = idx
+                        break
+                
+                if current_idx is not None and current_idx + 1 < len(all_timestamps_sorted):
+                    # 다음 발언까지의 시간 차이
+                    next_ts_sec = all_timestamps_sorted[current_idx + 1][1]
+                    duration = next_ts_sec - ts_sec
+                    # 발언 시간은 최소 10초, 최대 90초로 제한
+                    duration = max(10, min(duration, 90))
+                else:
+                    # 마지막 발언이면 평균 발언 시간(20초) 사용
+                    duration = 20
+                
+                total_seconds += duration
+            
+            return total_seconds
+        else:
+            # all_timestamps_sorted가 없으면 발언 횟수 기반 추정
+            # 평균 발언 시간 20초로 계산
+            return len(timestamp_seconds) * 20
+    
+    def _calculate_meeting_duration(self, parsed_transcript: List[Dict[str, str]]) -> int:
+        """
+        회의의 전체 시간 계산 (첫 타임스탬프 ~ 마지막 타임스탬프)
+        
+        Args:
+            parsed_transcript: 파싱된 transcript
+            
+        Returns:
+            회의 시간 (초)
+        """
+        if not parsed_transcript:
+            return 0
+        
+        timestamps = [entry["timestamp"] for entry in parsed_transcript if entry.get("timestamp")]
+        if not timestamps:
+            return 0
+        
+        timestamp_seconds = [self._timestamp_to_seconds(ts) for ts in timestamps]
+        if not timestamp_seconds:
+            return 0
+        
+        min_ts = min(timestamp_seconds)
+        max_ts = max(timestamp_seconds)
+        
+        # 마지막 발언의 시간도 포함 (평균 30초 추가)
+        return max_ts - min_ts + 30
+    
     def extract_participant_stats(self, parsed_transcript: List[Dict[str, str]]) -> Dict[str, Dict]:
         """
         Transcript에서 참여자별 통계 추출
@@ -995,6 +1115,9 @@ class MeetingPerformanceAnalyzer:
             "statements": []
         })
         
+        # 모든 타임스탬프 수집 (다음 발언 계산용)
+        all_timestamps = [entry["timestamp"] for entry in parsed_transcript if entry.get("timestamp")]
+        
         for entry in parsed_transcript:
             speaker = entry["speaker"]
             text = entry["text"]
@@ -1005,7 +1128,24 @@ class MeetingPerformanceAnalyzer:
             stats[speaker]["timestamps"].append(timestamp)
             stats[speaker]["statements"].append(text)
         
-        return dict(stats)
+        # 모든 타임스탬프를 시간순으로 정렬 (참여자별 발언 시간 계산용)
+        all_timestamps_sorted = []
+        for entry in parsed_transcript:
+            speaker = entry["speaker"]
+            timestamp = entry["timestamp"]
+            ts_seconds = self._timestamp_to_seconds(timestamp)
+            all_timestamps_sorted.append((speaker, ts_seconds))
+        all_timestamps_sorted.sort(key=lambda x: x[1])
+        
+        # 각 참여자의 발언 시간 계산
+        result = dict(stats)
+        for speaker, speaker_stats in result.items():
+            timestamps = speaker_stats["timestamps"]
+            speaking_seconds = self._calculate_speaking_time(timestamps, all_timestamps_sorted)
+            speaker_stats["speaking_time_seconds"] = speaking_seconds
+            speaker_stats["speaking_time"] = self._seconds_to_time_string(speaking_seconds)
+        
+        return result
     
     def format_transcript_for_analysis(self, meeting: Dict, parsed_transcript: List[Dict], stats: Dict) -> str:
         """
@@ -1221,7 +1361,12 @@ class MeetingPerformanceAnalyzer:
         # 1. 텍스트 합치기
         aggregated_transcript = ""
         all_participants = set()
-        global_stats = defaultdict(lambda: {"speak_count": 0, "total_words": 0})
+        global_stats = defaultdict(lambda: {
+            "speak_count": 0, 
+            "total_words": 0,
+            "speaking_time_seconds": 0
+        })
+        total_meeting_duration_seconds = 0
         
         # 날짜순 정렬
         sorted_meetings = sorted(meetings, key=lambda x: x.get('date', datetime.min))
@@ -1246,9 +1391,16 @@ class MeetingPerformanceAnalyzer:
             parsed_transcript = self.parse_transcript(transcript)
             meeting_stats = self.extract_participant_stats(parsed_transcript)
             
+            # 회의 시간 계산
+            meeting_duration = self._calculate_meeting_duration(parsed_transcript)
+            total_meeting_duration_seconds += meeting_duration
+            
             for speaker, stats in meeting_stats.items():
                 global_stats[speaker]["speak_count"] += stats["speak_count"]
                 global_stats[speaker]["total_words"] += stats["total_words"]
+                # 발언 시간 합산
+                if "speaking_time_seconds" in stats:
+                    global_stats[speaker]["speaking_time_seconds"] += stats["speaking_time_seconds"]
                 
             aggregated_transcript += f"\n\n=== Meeting: {title} ({date}) ===\n\n"
             aggregated_transcript += transcript
@@ -1262,11 +1414,13 @@ class MeetingPerformanceAnalyzer:
         
         sorted_participants = sorted(list(all_participants))
         for p in sorted_participants:
-            stats = global_stats.get(p, {"speak_count": 0, "total_words": 0})
+            stats = global_stats.get(p, {"speak_count": 0, "total_words": 0, "speaking_time_seconds": 0})
             words = stats["total_words"]
             ratio = (words / total_words_all * 100) if total_words_all > 0 else 0
+            speaking_time_seconds = stats.get("speaking_time_seconds", 0)
+            speaking_time_str = self._seconds_to_time_string(speaking_time_seconds)
             
-            p_info = f"{p} (발언: {stats['speak_count']}회, 단어: {words}개, 비율: {ratio:.1f}%)"
+            p_info = f"{p} (발언: {stats['speak_count']}회, 단어: {words}개, 비율: {ratio:.1f}%, 시간: {speaking_time_str})"
             participants_list.append(p_info)
             
             # 구조화된 참여자 데이터 추가
@@ -1274,7 +1428,9 @@ class MeetingPerformanceAnalyzer:
                 "name": p,
                 "speak_count": stats["speak_count"],
                 "word_count": words,
-                "percentage": round(ratio, 1)
+                "percentage": round(ratio, 1),
+                "speaking_time_seconds": speaking_time_seconds,
+                "speaking_time": speaking_time_str
             })
         
         # 템플릿 버전 확인
@@ -1348,6 +1504,11 @@ class MeetingPerformanceAnalyzer:
                     # 버전 파싱 실패 시 마크다운 형식으로 시도
                     structured_analysis = self._parse_daily_report_analysis(analysis_text, sorted_participants)
             
+            # 회의 시간을 시:분 형식으로 변환
+            total_hours = total_meeting_duration_seconds // 3600
+            total_minutes = (total_meeting_duration_seconds % 3600) // 60
+            total_time_str = f"{total_hours} hours {total_minutes} minutes" if total_hours > 0 else f"{total_minutes} minutes"
+            
             result = {
                 "status": "success",
                 "analysis": analysis_text,  # 원본 텍스트 유지 (JSON 또는 마크다운)
@@ -1359,6 +1520,8 @@ class MeetingPerformanceAnalyzer:
                 },
                 "participants": participants_data,  # 구조화된 객체 배열
                 "participants_formatted": participants_list,  # 기존 문자열 형식 (하위 호환성)
+                "total_meeting_time_seconds": total_meeting_duration_seconds,  # 실제 계산된 회의 시간 (초)
+                "total_meeting_time": total_time_str,  # 실제 계산된 회의 시간 (문자열)
                 "template_used": template_name,
                 "template_version": template_version,
                 "model_used": self.model_name,

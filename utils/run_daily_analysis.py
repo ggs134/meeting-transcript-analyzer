@@ -166,14 +166,54 @@ def generate_daily_report(analyzer: MeetingPerformanceAnalyzer, meetings: list, 
                     top_level_participants = result['participants']  # 최상위 participants (통계 정보 포함)
                     analysis_participants = result['analysis'].get('participants', [])
                     
-                    # 이름 기준으로 매칭하여 speak_count, word_count 추가
+                    # 이름 기준으로 매칭하여 speak_count, word_count 추가 및 speaking_percentage 재계산
                     top_level_dict = {p.get('name'): p for p in top_level_participants}
+                    
+                    # 전체 word_count 합계 계산 (비중 계산용) - top_level_participants 기준
+                    total_word_count = sum(p.get('word_count', 0) for p in top_level_participants)
+                    
+                    # 중복 제거를 위해 이미 처리한 참여자 이름 추적
+                    processed_names = set()
+                    unique_participants = []
+                    
                     for participant in analysis_participants:
                         participant_name = participant.get('name', '')
+                        
+                        # 중복 제거: 같은 이름이 이미 처리되었으면 건너뜀
+                        if participant_name in processed_names:
+                            continue
+                        
                         if participant_name in top_level_dict:
                             # speak_count, word_count 추가
                             participant['speak_count'] = top_level_dict[participant_name].get('speak_count', 0)
                             participant['word_count'] = top_level_dict[participant_name].get('word_count', 0)
+                            
+                            # 실제 계산된 speaking_time 사용 (타임스탬프 기반)
+                            top_level_participant = top_level_dict[participant_name]
+                            if 'speaking_time' in top_level_participant:
+                                participant['speaking_time'] = top_level_participant['speaking_time']
+                            if 'speaking_time_seconds' in top_level_participant:
+                                participant['speaking_time_seconds'] = top_level_participant['speaking_time_seconds']
+                            
+                            # word_count를 기반으로 speaking_percentage 재계산 (정확한 비중)
+                            word_count = participant['word_count']
+                            if total_word_count > 0:
+                                participant['speaking_percentage'] = round((word_count / total_word_count) * 100, 1)
+                            else:
+                                participant['speaking_percentage'] = 0.0
+                            
+                            processed_names.add(participant_name)
+                            unique_participants.append(participant)
+                    
+                    # 중복 제거된 participants로 교체
+                    result['analysis']['participants'] = unique_participants
+                    
+                    # 실제 계산된 회의 시간 사용 (AI 생성 값 대신)
+                    if 'total_meeting_time' in result:
+                        # summary.overview.total_time을 실제 계산된 값으로 업데이트
+                        if 'summary' in result['analysis'] and isinstance(result['analysis']['summary'], dict):
+                            if 'overview' in result['analysis']['summary']:
+                                result['analysis']['summary']['overview']['total_time'] = result['total_meeting_time']
                     
                     # 최상위 participants 필드 제거 (중복이므로)
                     del result['participants']

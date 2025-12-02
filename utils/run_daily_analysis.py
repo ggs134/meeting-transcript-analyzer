@@ -135,6 +135,7 @@ def generate_daily_report(analyzer: MeetingPerformanceAnalyzer, meetings: list, 
     # 각 분석 결과에 모든 원본 미팅 정보를 리스트로 추가
     for result in analyzed_results:
         result['target_meetings'] = target_meetings_info
+        result['target_date'] = target_date.strftime('%Y-%m-%d')
         # 원본 분석 텍스트 보존 (JSON 파싱 실패 시 사용)
         original_analysis_text = result.get('analysis', '')
         
@@ -211,22 +212,22 @@ def _generate_markdown_content(analyzed_results: list, target_date: datetime) ->
     output = StringIO()
     analysis_time = datetime.now()
     
-    output.write(f"# 일간 업무 보고서 - {target_date.strftime('%Y년 %m월 %d일')}\n\n")
-    output.write(f"**생성 일시**: {analysis_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+    output.write(f"# Daily Work Report - {target_date.strftime('%B %d, %Y')}\n\n")
+    output.write(f"**Generated at**: {analysis_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     output.write("---\n\n")
     
     for result in analyzed_results:
-        output.write(f"## 회의 정보\n\n")
-        output.write(f"- **분석 대상 날짜**: {target_date.strftime('%Y-%m-%d')}\n")
-        output.write(f"- **분석된 회의 수**: {result.get('meeting_count', len(result.get('target_meetings', [])))}\n")
+        output.write(f"## Meeting Information\n\n")
+        output.write(f"- **Target Date**: {target_date.strftime('%Y-%m-%d')}\n")
+        output.write(f"- **Number of Meetings Analyzed**: {result.get('meeting_count', len(result.get('target_meetings', [])))}\n")
         
         # target_meetings 정보가 있으면 추가
         if 'target_meetings' in result and result['target_meetings']:
-            output.write(f"\n### 분석된 회의 목록\n\n")
+            output.write(f"\n### Analyzed Meetings List\n\n")
             for idx, target_meeting in enumerate(result['target_meetings'], 1):
                 output.write(f"{idx}. **{target_meeting.get('meeting_title', 'N/A')}**\n")
                 output.write(f"   - ID: `{target_meeting.get('meeting_id', 'N/A')}`\n")
-                output.write(f"   - 생성 시간: {target_meeting.get('created_time', 'N/A')}\n")
+                output.write(f"   - Created Time: {target_meeting.get('created_time', 'N/A')}\n")
         
         output.write("\n---\n\n")
         
@@ -254,13 +255,13 @@ def _generate_markdown_content(analyzed_results: list, target_date: datetime) ->
                 else:
                     original_text = str(analysis_data) if analysis_data else ''
                 if isinstance(original_text, str) and original_text:
-                    output.write("## 분석 결과\n\n")
-                    output.write("⚠️ JSON 파싱은 성공했지만 빈 구조입니다. 원본 응답을 표시합니다:\n\n")
+                    output.write("## Analysis Results\n\n")
+                    output.write("⚠️ JSON parsing succeeded but the structure is empty. Showing original response:\n\n")
                     output.write("```json\n")
                     output.write(original_text)
                     output.write("\n```\n\n")
                 else:
-                    output.write("⚠️ 분석 결과가 없습니다.\n\n")
+                    output.write("⚠️ No analysis results available.\n\n")
         else:
             # 기존 마크다운 형식 또는 문자열
             if isinstance(analysis, dict):
@@ -271,7 +272,7 @@ def _generate_markdown_content(analyzed_results: list, target_date: datetime) ->
                 output.write(analysis_text)
                 output.write("\n\n")
             else:
-                output.write("⚠️ 분석 결과가 없습니다.\n\n")
+                output.write("⚠️ No analysis results available.\n\n")
     
     return output.getvalue()
 
@@ -355,52 +356,52 @@ def _write_json_analysis_to_markdown(file, analysis_data: dict):
     # Summary 섹션
     summary = analysis_data.get('summary', {})
     if summary:
-        file.write("## 하루의 회의 내용 요약\n\n")
+        file.write("## Summary of Today's Meetings\n\n")
         
         # Overview
         overview = summary.get('overview', {})
         if overview:
-            file.write("### 전체 회의 개요\n\n")
-            file.write(f"- 총 회의 수: {overview.get('meeting_count', 'N/A')}\n")
-            file.write(f"- 총 회의 시간: {overview.get('total_time', 'N/A')}\n")
+            file.write("### Overall Meeting Overview\n\n")
+            file.write(f"- Total Number of Meetings: {overview.get('meeting_count', 'N/A')}\n")
+            file.write(f"- Total Meeting Time: {overview.get('total_time', 'N/A')}\n")
             main_topics = overview.get('main_topics', [])
             if main_topics:
-                file.write(f"- 주요 논의 주제: {', '.join(main_topics)}\n")
+                file.write(f"- Main Discussion Topics: {', '.join(main_topics)}\n")
             file.write("\n")
         
         # Topics
         topics = summary.get('topics', [])
         if topics:
-            file.write("### 주제별 회의 내용 분류\n\n")
+            file.write("### Meeting Content by Topic\n\n")
             for topic in topics:
                 topic_name = topic.get('topic', '')
                 if topic_name:
                     file.write(f"#### {topic_name}\n\n")
                     related_meetings = topic.get('related_meetings', [])
                     if related_meetings:
-                        file.write(f"- **관련 회의**: {', '.join(related_meetings)}\n")
+                        file.write(f"- **Related Meetings**: {', '.join(related_meetings)}\n")
                     
                     key_discussions = topic.get('key_discussions', [])
                     if key_discussions:
-                        file.write("- **주요 논의 내용**:\n")
+                        file.write("- **Key Discussion Points**:\n")
                         for discussion in key_discussions:
                             file.write(f"  - {discussion}\n")
                     
                     key_decisions = topic.get('key_decisions', [])
                     if key_decisions:
-                        file.write("- **핵심 결정사항**:\n")
+                        file.write("- **Key Decisions**:\n")
                         for decision in key_decisions:
                             file.write(f"  - {decision}\n")
                     
                     progress = topic.get('progress', [])
                     if progress:
-                        file.write("- **진전 사항**:\n")
+                        file.write("- **Progress**:\n")
                         for prog in progress:
                             file.write(f"  - {prog}\n")
                     
                     issues = topic.get('issues', [])
                     if issues:
-                        file.write("- **이슈 및 블로커**:\n")
+                        file.write("- **Issues and Blockers**:\n")
                         for issue in issues:
                             file.write(f"  - {issue}\n")
                     
@@ -409,7 +410,7 @@ def _write_json_analysis_to_markdown(file, analysis_data: dict):
         # Key Decisions
         key_decisions = summary.get('key_decisions', [])
         if key_decisions:
-            file.write("### 핵심 결정사항 (전체 요약)\n\n")
+            file.write("### Key Decisions (Overall Summary)\n\n")
             for decision in key_decisions:
                 file.write(f"- {decision}\n")
             file.write("\n")
@@ -417,7 +418,7 @@ def _write_json_analysis_to_markdown(file, analysis_data: dict):
         # Major Achievements
         major_achievements = summary.get('major_achievements', [])
         if major_achievements:
-            file.write("### 주요 성과 및 진전 (전체 요약)\n\n")
+            file.write("### Major Achievements and Progress (Overall Summary)\n\n")
             for achievement in major_achievements:
                 file.write(f"- {achievement}\n")
             file.write("\n")
@@ -425,7 +426,7 @@ def _write_json_analysis_to_markdown(file, analysis_data: dict):
         # Common Issues
         common_issues = summary.get('common_issues', [])
         if common_issues:
-            file.write("### 공통 이슈 및 블로커 (전체 요약)\n\n")
+            file.write("### Common Issues and Blockers (Overall Summary)\n\n")
             for issue in common_issues:
                 file.write(f"- {issue}\n")
             file.write("\n")
@@ -443,46 +444,46 @@ def _write_json_analysis_to_markdown(file, analysis_data: dict):
                 speaking_time = participant.get('speaking_time')
                 speaking_percentage = participant.get('speaking_percentage')
                 if speaking_time or speaking_percentage:
-                    file.write("### 개인별 발언 시간\n\n")
+                    file.write("### Speaking Time\n\n")
                     if speaking_time and speaking_percentage:
-                        file.write(f"- {speaking_time} (전체의 {speaking_percentage}%)\n")
+                        file.write(f"- {speaking_time} ({speaking_percentage}% of total)\n")
                     elif speaking_time:
                         file.write(f"- {speaking_time}\n")
                     elif speaking_percentage:
-                        file.write(f"- 전체의 {speaking_percentage}%\n")
+                        file.write(f"- {speaking_percentage}% of total\n")
                     file.write("\n")
                 
                 key_activities = participant.get('key_activities', [])
                 if key_activities:
-                    file.write("### 오늘의 주요 활동\n\n")
+                    file.write("### Today's Key Activities\n\n")
                     for activity in key_activities:
                         file.write(f"- {activity}\n")
                     file.write("\n")
                 
                 progress = participant.get('progress', [])
                 if progress:
-                    file.write("### 진행 상황 및 성과\n\n")
+                    file.write("### Progress and Achievements\n\n")
                     for prog in progress:
                         file.write(f"- {prog}\n")
                     file.write("\n")
                 
                 issues = participant.get('issues', [])
                 if issues:
-                    file.write("### 이슈 및 블로커\n\n")
+                    file.write("### Issues and Blockers\n\n")
                     for issue in issues:
                         file.write(f"- {issue}\n")
                     file.write("\n")
                 
                 action_items = participant.get('action_items', [])
                 if action_items:
-                    file.write("### 다음 액션 아이템\n\n")
+                    file.write("### Next Action Items\n\n")
                     for item in action_items:
                         file.write(f"- [ ] {item}\n")
                     file.write("\n")
                 
                 collaboration = participant.get('collaboration', [])
                 if collaboration:
-                    file.write("### 협업 현황\n\n")
+                    file.write("### Collaboration Status\n\n")
                     for collab in collaboration:
                         file.write(f"- {collab}\n")
                     file.write("\n")
@@ -516,22 +517,22 @@ def save_daily_report_to_file(analyzed_results: list, target_date: datetime, out
     
     # 마크다운 파일로 저장
     with open(md_filename, 'w', encoding='utf-8') as f:
-        f.write(f"# 일간 업무 보고서 - {target_date.strftime('%Y년 %m월 %d일')}\n\n")
-        f.write(f"**생성 일시**: {analysis_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"# Daily Work Report - {target_date.strftime('%B %d, %Y')}\n\n")
+        f.write(f"**Generated at**: {analysis_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write("---\n\n")
         
         for result in analyzed_results:
-            f.write(f"## 회의 정보\n\n")
-            f.write(f"- **분석 대상 날짜**: {target_date.strftime('%Y-%m-%d')}\n")
-            f.write(f"- **분석된 회의 수**: {result.get('meeting_count', len(result.get('target_meetings', [])))}\n")
+            f.write(f"## Meeting Information\n\n")
+            f.write(f"- **Target Date**: {target_date.strftime('%Y-%m-%d')}\n")
+            f.write(f"- **Number of Meetings Analyzed**: {result.get('meeting_count', len(result.get('target_meetings', [])))}\n")
             
             # target_meetings 정보가 있으면 추가
             if 'target_meetings' in result and result['target_meetings']:
-                f.write(f"\n### 분석된 회의 목록\n\n")
+                f.write(f"\n### Analyzed Meetings List\n\n")
                 for idx, target_meeting in enumerate(result['target_meetings'], 1):
                     f.write(f"{idx}. **{target_meeting.get('meeting_title', 'N/A')}**\n")
                     f.write(f"   - ID: `{target_meeting.get('meeting_id', 'N/A')}`\n")
-                    f.write(f"   - 생성 시간: {target_meeting.get('created_time', 'N/A')}\n")
+                    f.write(f"   - Created Time: {target_meeting.get('created_time', 'N/A')}\n")
             
             f.write("\n---\n\n")
             
@@ -555,13 +556,13 @@ def save_daily_report_to_file(analyzed_results: list, target_date: datetime, out
                     # 빈 구조면 원본 텍스트 확인
                     original_text = result.get('analysis', '')
                     if isinstance(original_text, str) and original_text:
-                        f.write("## 분석 결과\n\n")
-                        f.write("⚠️ JSON 파싱은 성공했지만 빈 구조입니다. 원본 응답을 표시합니다:\n\n")
+                        f.write("## Analysis Results\n\n")
+                        f.write("⚠️ JSON parsing succeeded but the structure is empty. Showing original response:\n\n")
                         f.write("```json\n")
                         f.write(original_text)
                         f.write("\n```\n\n")
                     else:
-                        f.write("⚠️ 분석 결과가 없습니다.\n\n")
+                        f.write("⚠️ No analysis results available.\n\n")
             else:
                 # 기존 마크다운 형식 또는 문자열
                 if isinstance(analysis, dict):
@@ -572,7 +573,7 @@ def save_daily_report_to_file(analyzed_results: list, target_date: datetime, out
                     f.write(analysis_text)
                     f.write("\n\n")
                 else:
-                    f.write("⚠️ 분석 결과가 없습니다.\n\n")
+                    f.write("⚠️ No analysis results available.\n\n")
     
     # JSON 파일로 저장
     with open(json_filename, 'w', encoding='utf-8') as f:
